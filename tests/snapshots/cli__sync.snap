@@ -1,0 +1,39 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "repos": [
+    {
+      "files": [
+        {
+          "action": "written",
+          "path": ".prettierrc.yaml"
+        },
+        {
+          "action": "written",
+          "path": ".prettierignore"
+        },
+        {
+          "action": "written",
+          "path": ".markdownlint-cli2.yaml"
+        },
+        {
+          "action": "written",
+          "path": ".cspell.yaml"
+        },
+        {
+          "action": "written",
+          "path": ".mise.toml"
+        },
+        {
+          "action": "written",
+          "path": ".github/workflows/static-analysis.yml"
+        }
+      ],
+      "name": "Repo",
+      "path": "[ROOT]/home/Repo"
+    }
+  ],
+  "schema": 1
+}

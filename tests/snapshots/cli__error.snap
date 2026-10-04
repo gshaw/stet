@@ -1,0 +1,8 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "error": "no .stet.toml in [ROOT] or any folder above it",
+  "schema": 1
+}
