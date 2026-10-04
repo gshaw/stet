@@ -54,6 +54,19 @@ included, minus `.gitignore`d files, `Inbox/` and the paths `.stet.toml` ignores
 `rules`. Links resolve with exact case, one folder listing at a time, because the Mac's
 file system ignores case and GitHub doesn't.
 
+## `stet inbox`
+
+The nightly mail run (a Rota task) has to know two things for every repo: what's waiting
+in `Inbox/`, and where mail goes. Both lived in prose it had to read five times. `stet
+inbox --json` gives them as data. Items skip the Inbox's own `README.md`, `.gitignore`
+and `_processed/` (Health's), which the run already ignored by hand.
+
+The mail rules stay written in each `AGENTS.md`, where Gerry and agents edit them; stet
+parses the "Mail that belongs here" section rather than moving it into config. Its
+bullets are what belongs, a paragraph starting "Not here:" is what doesn't, and any other
+paragraph after the bullets is a note. A repo without the section gets a `problem`, so
+the run can ask rather than guess.
+
 ## Where things live
 
 ```text

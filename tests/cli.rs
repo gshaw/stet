@@ -379,3 +379,54 @@ fn doctor_reports_each_part() {
     home.snapshot("doctor", &report);
     assert_eq!(report["ok"], false);
 }
+
+#[test]
+fn inbox_lists_items_and_mail_rules() {
+    let home = Home::new();
+    for file in [
+        "README.md",
+        ".gitignore",
+        ".DS_Store",
+        "_processed/2026-10-01/old.pdf",
+        "scan.pdf",
+        "trip/a.eml",
+        "trip/b.eml",
+    ] {
+        home.write(&format!("home/Repo/Inbox/{file}"), "12345");
+    }
+    home.write("home/.config/stet/config.toml", "repos = [\"~/Repo\"]\n");
+    let report = home.stet_in(&home.root, &["inbox", "--json"]).json();
+    let mut redacted = report.clone();
+    for item in redacted["repos"][0]["items"].as_array_mut().unwrap() {
+        item["modified"] = "[TIME]".into();
+    }
+    home.snapshot("inbox", &redacted);
+    assert_eq!(report["waiting"], 2);
+    assert_eq!(report["repos"][0]["items"][1]["bytes"], 10);
+    let out = home.stet_in(&home.root, &["inbox", "--mail", "home/Repo"]);
+    assert!(out.stdout.contains("Repo  2 waiting"), "{}", out.stdout);
+    assert!(
+        out.stdout.contains("  mail: Travel bookings and tickets."),
+        "{}",
+        out.stdout
+    );
+    assert!(
+        out.stdout.contains("  not here: health or money."),
+        "{}",
+        out.stdout
+    );
+}
+
+#[test]
+fn inbox_says_when_the_mail_section_is_missing() {
+    let home = Home::new();
+    home.write("home/Repo/AGENTS.md", "# Rules\n");
+    let report = home
+        .stet_in(&home.root, &["inbox", "--json", "home/Repo"])
+        .json();
+    assert_eq!(
+        report["repos"][0]["problem"],
+        "AGENTS.md has no \"Mail that belongs here\" section"
+    );
+    assert!(report["repos"][0].get("mail").is_none());
+}

@@ -142,3 +142,52 @@ repo in `~/.config/stet/config.toml`.
   exists, so they're the versions that repo pins.
 - One `repo:<name>` check per configured repo: the folder exists, `.stet.toml` reads, and
   the generated configs match it.
+
+## `stet inbox --json`
+
+What's waiting in each repo's `Inbox/`, and the repo's "Mail that belongs here" section
+from its `AGENTS.md`. The repos are the ones named, or every repo in the config file.
+Exit 0 whatever is waiting.
+
+```json
+{
+  "schema": 1,
+  "waiting": 1,
+  "repos": [
+    {
+      "name": "Health",
+      "path": "/Users/gerry/Documents/Health",
+      "inbox": "/Users/gerry/Documents/Health/Inbox",
+      "items": [
+        {
+          "name": "lab results.pdf",
+          "path": "/Users/gerry/Documents/Health/Inbox/lab results.pdf",
+          "kind": "file",
+          "bytes": 182340,
+          "modified": "2026-10-03T22:14:05Z"
+        }
+      ],
+      "mail": {
+        "belongs": [
+          "Gerry's and Jesse's medical records, lab and imaging results, referrals, prescriptions, appointments, and clinic or pharmacy receipts.",
+          "Fitness: training, gym, and coaching mail, and nutrition."
+        ],
+        "notes": [
+          "A question email about an item from this repo names only the sender, subject and date. No results and no conditions."
+        ]
+      }
+    }
+  ]
+}
+```
+
+- `items`: everything in `Inbox/` except its own `README.md`, `.gitignore`, `_processed/`
+  and dotfiles, sorted by name. `kind` is `file` or `folder`; a folder's `bytes` is
+  everything inside it. A repo with no `Inbox/` folder has no items.
+- `mail.belongs`: the section's top-level bullets, each on one line, Markdown kept.
+- `mail.notHere`: the paragraph that starts "Not here:", without the label. Absent when
+  there's none.
+- `mail.notes`: any other paragraph after the bullets, like how to word a question email.
+  The paragraph before the bullets describes the nightly run and is left out.
+- `mail` is absent, and `problem` says why, when `AGENTS.md` is missing or has no
+  "Mail that belongs here" heading. `problem` also reports an `Inbox/` stet couldn't read.

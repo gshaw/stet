@@ -12,6 +12,7 @@ pub mod doctor;
 pub mod env;
 pub mod generate;
 pub mod help;
+pub mod inbox;
 pub mod markdown;
 pub mod rules;
 pub mod sync;
@@ -26,4 +27,9 @@ pub fn chain(error: &miette::Report) -> String {
         .map(|e| e.to_string())
         .collect::<Vec<_>>()
         .join(": ")
+}
+
+/// A time as the JSON contract writes it: ISO 8601 in UTC, to the second.
+pub fn contract_time(t: jiff::Timestamp) -> String {
+    t.strftime("%Y-%m-%dT%H:%M:%SZ").to_string()
 }
