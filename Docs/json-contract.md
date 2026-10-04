@@ -191,3 +191,20 @@ Exit 0 whatever is waiting.
   The paragraph before the bullets describes the nightly run and is left out.
 - `mail` is absent, and `problem` says why, when `AGENTS.md` is missing or has no
   "Mail that belongs here" heading. `problem` also reports an `Inbox/` stet couldn't read.
+
+## `stet init <dir> --json`
+
+```json
+{
+  "schema": 1,
+  "path": "/Users/gerry/Documents/Music",
+  "name": "Music",
+  "created": [".cspell.yaml", ".git/", ".gitignore", "AGENTS.md", "CLAUDE.md", "Inbox/", "README.md"],
+  "next": ["Fill in the ❌ lines in README.md and AGENTS.md.", "Create the private repo on GitHub and add it as origin."]
+}
+```
+
+- `created`: every file and folder written, relative to `path`, sorted. `.git/` appears
+  when stet ran `git init`; a folder that already had an empty `.git` keeps it.
+- `next`: what's left to do by hand, in order.
+- Exit 1, with nothing written, when `dir` holds anything but `.git` and `.DS_Store`.

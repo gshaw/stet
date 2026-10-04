@@ -67,6 +67,20 @@ bullets are what belongs, a paragraph starting "Not here:" is what doesn't, and 
 paragraph after the bullets is a note. A repo without the section gets a `problem`, so
 the run can ask rather than guess.
 
+## `stet init`
+
+The bootstrap steps in `Meta/README.md` as one command, into an empty folder only. It
+writes everything a knowledge repo has before it has content: the configs through the same
+code as `stet sync`, `.gitignore` with `Inbox/`, a `README.md`, an `AGENTS.md` with the
+inbox flow, a "Mail that belongs here" section, the sensitivity never-list and the
+universal rules, the `CLAUDE.md` symlink, and `Inbox/`. What only a person knows (what the
+repo covers, what mail it takes, what it must never hold) is a ❌ line to fill in, so
+the repo passes `stet check` from the start and an agent can find what's missing.
+
+It runs `git init` and stops there. Creating the GitHub repo, the config entry and the
+first commit are printed as next steps: they're decisions, and the first content should
+be the first commit.
+
 ## Where things live
 
 ```text

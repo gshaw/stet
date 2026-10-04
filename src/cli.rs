@@ -20,6 +20,7 @@ use crate::doctor;
 use crate::env::Env;
 use crate::help;
 use crate::inbox;
+use crate::init;
 use crate::sync;
 use crate::tools::Tools;
 
@@ -45,6 +46,8 @@ enum Command {
     Sync(RepoArgs),
     /// What's waiting in each repo's Inbox/, and where mail goes (each AGENTS.md's mail section).
     Inbox(InboxArgs),
+    /// Start a new knowledge repo in an empty folder: configs, README, AGENTS, Inbox/, git.
+    Init(InitArgs),
     /// Check that mise, Node and the tools run, the config reads, and every repo is in sync.
     Doctor(JsonFlag),
     /// Print the completion script for a shell.
@@ -107,6 +110,17 @@ struct InboxArgs {
     output: JsonFlag,
 }
 
+#[derive(Debug, clap::Args)]
+struct InitArgs {
+    /// The new repo's folder. It may exist if it's empty.
+    dir: PathBuf,
+    /// The repo's name in README and AGENTS. Default: the folder's name.
+    #[arg(long)]
+    name: Option<String>,
+    #[command(flatten)]
+    output: JsonFlag,
+}
+
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum Shell {
     Fish,
@@ -121,6 +135,7 @@ impl Command {
             Command::Sync(a) => a.output.json,
             Command::Doctor(f) => f.json,
             Command::Inbox(a) => a.output.json,
+            Command::Init(a) => a.output.json,
             Command::Completion { .. } | Command::Usage | Command::Help(_) => false,
         }
     }
@@ -168,6 +183,19 @@ fn run(command: Command) -> Result<u8> {
         Command::Sync(a) => sync_command(&env, a),
         Command::Doctor(f) => doctor_command(&env, f.json),
         Command::Inbox(a) => inbox_command(&env, a),
+        Command::Init(a) => {
+            let report = init::init(&env, &a.dir, a.name.as_deref())?;
+            if a.output.json {
+                print_json(&report);
+            } else {
+                println!("Started {} at {}", report.name, report.path);
+                println!("Next:");
+                for step in &report.next {
+                    println!("  - {step}");
+                }
+            }
+            Ok(0)
+        }
         Command::Completion { shell } => {
             print!("{}", completion(shell)?);
             Ok(0)

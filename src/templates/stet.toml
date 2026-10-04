@@ -1,0 +1,3 @@
+# stet: what this repo does differently from the shared setup. `stet help config` has
+# every key. `stet sync` writes the tool configs from this file; `stet check` fails when
+# they drift. Empty means the shared setup as it is.

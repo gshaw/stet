@@ -1,0 +1,31 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "created": [
+    ".cspell.yaml",
+    ".git/",
+    ".github/workflows/static-analysis.yml",
+    ".gitignore",
+    ".markdownlint-cli2.yaml",
+    ".mise.toml",
+    ".prettierignore",
+    ".prettierrc.yaml",
+    ".stet.toml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "Inbox/",
+    "README.md"
+  ],
+  "name": "Music",
+  "next": [
+    "Fill in the ❌ lines in README.md and AGENTS.md.",
+    "Create the private repo on GitHub and add it as origin.",
+    "Add the repo to ~/.config/stet/config.toml.",
+    "`mise trust && mise install`, then `mise run check` until clean.",
+    "Import the first content as its first domain, commit to main and push."
+  ],
+  "path": "[ROOT]/home/Music",
+  "schema": 1
+}
