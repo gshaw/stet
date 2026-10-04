@@ -1,0 +1,41 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "repos": [
+    {
+      "inbox": "[ROOT]/home/Repo/Inbox",
+      "items": [
+        {
+          "bytes": 5,
+          "kind": "file",
+          "modified": "[TIME]",
+          "name": "scan.pdf",
+          "path": "[ROOT]/home/Repo/Inbox/scan.pdf"
+        },
+        {
+          "bytes": 10,
+          "kind": "folder",
+          "modified": "[TIME]",
+          "name": "trip",
+          "path": "[ROOT]/home/Repo/Inbox/trip"
+        }
+      ],
+      "mail": {
+        "belongs": [
+          "Travel bookings and tickets.",
+          "Orders for the house."
+        ],
+        "notHere": "health or money.",
+        "notes": [
+          "A question email names only the sender."
+        ]
+      },
+      "name": "Repo",
+      "path": "[ROOT]/home/Repo"
+    }
+  ],
+  "schema": 1,
+  "waiting": 2
+}

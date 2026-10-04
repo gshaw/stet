@@ -35,6 +35,18 @@ key, and `stet help rules` the house rules. Every command takes `--json`; the do
 and exit codes are in [Docs/json-contract.md](Docs/json-contract.md). How stet works is
 in [Docs/design.md](Docs/design.md), and why in [Docs/decisions.md](Docs/decisions.md).
 
+## The inbox
+
+```sh
+stet inbox          # what's waiting in every repo's Inbox/
+stet inbox --mail   # and where each repo says mail goes
+stet inbox --json   # both, for the nightly mail run
+```
+
+The repos come from `~/.config/stet/config.toml` (`repos = [...]`). The mail rules are
+each repo's "Mail that belongs here" section in its `AGENTS.md`, read as data: the
+bullets, the "Not here:" line, and any notes. The prose stays the source.
+
 ## Developing
 
 `mise run test`, `mise run lint`, `mise run fmt`, and `mise run snapshots` to review changed

@@ -13,11 +13,13 @@ use serde::Serialize;
 use crate::check::{self, Options};
 use crate::config::{Global, Repo};
 use crate::contract::{
-    CheckReport, CheckStatus, ErrorReport, SCHEMA, Severity, SyncAction, SyncReport,
+    CheckReport, CheckStatus, ErrorReport, InboxReport, ItemKind, SCHEMA, Severity, SyncAction,
+    SyncReport,
 };
 use crate::doctor;
 use crate::env::Env;
 use crate::help;
+use crate::inbox;
 use crate::sync;
 use crate::tools::Tools;
 
@@ -41,6 +43,8 @@ enum Command {
     Check(CheckArgs),
     /// Write the shared tool configs into a repo from its .stet.toml.
     Sync(RepoArgs),
+    /// What's waiting in each repo's Inbox/, and where mail goes (each AGENTS.md's mail section).
+    Inbox(InboxArgs),
     /// Check that mise, Node and the tools run, the config reads, and every repo is in sync.
     Doctor(JsonFlag),
     /// Print the completion script for a shell.
@@ -91,6 +95,18 @@ struct CheckArgs {
     warnings: bool,
 }
 
+#[derive(Debug, clap::Args)]
+struct InboxArgs {
+    /// Repos. Default: every repo in ~/.config/stet/config.toml.
+    #[arg(value_name = "REPO")]
+    repos: Vec<PathBuf>,
+    /// Also print each repo's mail rules.
+    #[arg(long)]
+    mail: bool,
+    #[command(flatten)]
+    output: JsonFlag,
+}
+
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum Shell {
     Fish,
@@ -104,6 +120,7 @@ impl Command {
             Command::Check(a) => a.repos.output.json,
             Command::Sync(a) => a.output.json,
             Command::Doctor(f) => f.json,
+            Command::Inbox(a) => a.output.json,
             Command::Completion { .. } | Command::Usage | Command::Help(_) => false,
         }
     }
@@ -150,6 +167,7 @@ fn run(command: Command) -> Result<u8> {
         Command::Check(a) => check_command(&env, a),
         Command::Sync(a) => sync_command(&env, a),
         Command::Doctor(f) => doctor_command(&env, f.json),
+        Command::Inbox(a) => inbox_command(&env, a),
         Command::Completion { shell } => {
             print!("{}", completion(shell)?);
             Ok(0)
@@ -278,6 +296,75 @@ fn sync_command(env: &Env, args: RepoArgs) -> Result<u8> {
         }
     }
     Ok(0)
+}
+
+fn inbox_command(env: &Env, args: InboxArgs) -> Result<u8> {
+    let roots: Vec<PathBuf> = if args.repos.is_empty() {
+        let global = Global::load(env)?;
+        if global.repos.is_empty() {
+            return Err(miette!(
+                "no repos in {}; name them or add them there",
+                global.abbreviate(&global.file())
+            ));
+        }
+        global.repos
+    } else {
+        args.repos
+            .iter()
+            .map(|p| std::path::absolute(p).into_diagnostic())
+            .collect::<Result<_>>()?
+    };
+    let repos: Vec<_> = roots.iter().map(|r| inbox::inbox(r)).collect();
+    let report = InboxReport {
+        schema: SCHEMA,
+        waiting: repos.iter().map(|r| r.items.len()).sum(),
+        repos,
+    };
+    if args.output.json {
+        print_json(&report);
+        return Ok(0);
+    }
+    let width = report.repos.iter().map(|r| r.name.len()).max().unwrap_or(0);
+    for repo in &report.repos {
+        let state = match repo.items.len() {
+            0 => "nothing waiting".to_string(),
+            n => format!("{n} waiting"),
+        };
+        println!("{:<width$}  {state}", repo.name);
+        for item in &repo.items {
+            let slash = if item.kind == ItemKind::Folder {
+                "/"
+            } else {
+                ""
+            };
+            println!("  {}{slash}  {}", item.name, human_size(item.bytes));
+        }
+        if let Some(problem) = &repo.problem {
+            println!("  ! {problem}");
+        }
+        if args.mail
+            && let Some(mail) = &repo.mail
+        {
+            for line in &mail.belongs {
+                println!("  mail: {line}");
+            }
+            if let Some(not) = &mail.not_here {
+                println!("  not here: {not}");
+            }
+            for note in &mail.notes {
+                println!("  note: {note}");
+            }
+        }
+    }
+    Ok(0)
+}
+
+fn human_size(bytes: u64) -> String {
+    match bytes {
+        b if b < 1_000 => format!("{b} B"),
+        b if b < 1_000_000 => format!("{:.0} KB", b as f64 / 1e3),
+        b => format!("{:.1} MB", b as f64 / 1e6),
+    }
 }
 
 fn doctor_command(env: &Env, json: bool) -> Result<u8> {
