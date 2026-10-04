@@ -7,7 +7,7 @@ there, dated, newest first. The idea's history before the repo is in Workshop at
 
 ## The one rule: the CLI is the engine
 
-- **`stet` is the product and its only door.** An agent, a Rota task or a script gets
+- **`stet` is the product and its only door.** An agent, a rota task or a script gets
   every piece of data from `stet … --json` and changes the repos' configs only through
   `stet sync`. If a client needs something the CLI can't give it, add a command or a field.
 - **`src/contract.rs` is data shapes only.** serde structs and enums for the `--json`

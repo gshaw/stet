@@ -6,7 +6,7 @@ Finances, Arniston). It does the mechanical parts of the pattern in Workshop's
 
 _Stet_ is the proofreader's mark for "let it stand", written in the margin to keep text
 that was crossed out. That's the superseded-block rule: old text stays, marked and dated.
-stet is one of the three Bunter tools, beside [Rota](https://github.com/gshaw/Rota) and `am`.
+stet is one of the three Bunter tools, beside [rota](https://github.com/gshaw/rota) and `am`.
 
 ## Install
 
@@ -15,7 +15,7 @@ mise run publish
 ```
 
 That checks, tests, builds, signs and installs `~/.local/bin/stet`. It signs with the
-certificate in `ROTA_SIGN_IDENTITY`, Rota's, set once per Mac with `mise set -g`;
+certificate in `ROTA_SIGN_IDENTITY`, rota's, set once per Mac with `mise set -g`;
 without it, stet installs unsigned with a warning.
 
 ## Checking a repo

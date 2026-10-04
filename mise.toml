@@ -26,7 +26,7 @@ run = "cargo insta test --review"
 [tasks.sign]
 description = "Sign the release build as ca.gshaw.stet, so macOS keeps its folder grants"
 # ROTA_SIGN_IDENTITY is the certificate's SHA-1, set once per Mac with `mise set -g`.
-# stet shares Rota's certificate; only the identifier differs.
+# stet shares rota's certificate; only the identifier differs.
 run = '''
 if [ -n "${ROTA_SIGN_IDENTITY:-}" ]; then
   codesign --force --sign "$ROTA_SIGN_IDENTITY" --identifier ca.gshaw.stet target/release/stet
