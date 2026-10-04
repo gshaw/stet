@@ -1,0 +1,10 @@
+amends "package://github.com/jdx/hk/releases/download/v2.3.0/hk@2.3.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.3.0/hk@2.3.0#/Builtins.pkl"
+
+// hk builds the pre-commit, check and fix hooks from these steps.
+steps {
+    ["cargo-fmt"] = Builtins.cargo_fmt
+    ["cargo-clippy"] = (Builtins.cargo_clippy) {
+        check = "cargo clippy --all-targets --quiet -- -D warnings"
+    }
+}

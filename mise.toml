@@ -1,0 +1,56 @@
+[tools]
+rust = { version = "1.98.1", components = "rustfmt,clippy" }
+hk = "2.3.0"
+cargo-insta = "1.48.0"
+
+[tasks.build]
+description = "Build stet for release"
+run = "cargo build --release"
+
+[tasks.test]
+description = "Every test; none of them touches the real knowledge repos or gshaw.ca"
+run = "cargo test"
+
+[tasks.lint]
+description = "rustfmt and clippy, as the pre-commit hook runs them"
+run = "hk check --all"
+
+[tasks.fmt]
+description = "Format and apply clippy's fixes"
+run = "hk fix --all"
+
+[tasks.snapshots]
+description = "Rerun the tests and review changed JSON snapshots"
+run = "cargo insta test --review"
+
+[tasks.sign]
+description = "Sign the release build as ca.gshaw.stet, so macOS keeps its folder grants"
+# ROTA_SIGN_IDENTITY is the certificate's SHA-1, set once per Mac with `mise set -g`.
+# stet shares Rota's certificate; only the identifier differs.
+run = '''
+if [ -n "${ROTA_SIGN_IDENTITY:-}" ]; then
+  codesign --force --sign "$ROTA_SIGN_IDENTITY" --identifier ca.gshaw.stet target/release/stet
+else
+  echo "sign: ROTA_SIGN_IDENTITY isn't set, so stet installs unsigned and macOS may ask again for ~/Documents" >&2
+fi
+'''
+
+[tasks.install]
+description = "Copy the release build to ~/.local/bin/stet through a rename"
+run = '''
+mkdir -p "$HOME/.local/bin"
+cp target/release/stet "$HOME/.local/bin/.stet.new"
+mv -f "$HOME/.local/bin/.stet.new" "$HOME/.local/bin/stet"
+echo "installed $HOME/.local/bin/stet"
+'''
+
+[tasks.publish]
+description = "Check, test, build, sign, then install to ~/.local/bin/stet"
+run = [
+  "cargo fmt --check",
+  "cargo clippy --all-targets -- -D warnings",
+  "cargo test",
+  "cargo build --release",
+  { task = "sign" },
+  { task = "install" },
+]
