@@ -464,3 +464,84 @@ fn init_refuses_a_folder_with_files() {
     assert!(out.stderr.contains("isn't empty"), "{}", out.stderr);
     assert!(!home.repo().join("CLAUDE.md").exists());
 }
+
+fn publish_home() -> Home {
+    let home = Home::new();
+    home.write(
+        "home/.config/stet/config.toml",
+        "repos = [\"~/Repo\"]\n[publish]\nsite = \"~/site\"\n",
+    );
+    home.write(
+        "home/site/content/articles/_index.md",
+        "---\ntitle: Articles\n---\n",
+    );
+    home.write(
+        "home/Repo/Notes/post.md",
+        "# Backups that work\n\nSee [the plan](plan.md#steps), [Litestream](https://litestream.io)\n\
+         and [Life's note](https://github.com/gshaw/Life/blob/main/x.md).\n\n\
+         ![diagram](diagram.png)\n\n## Steps\n\nStop the old machine first.\n",
+    );
+    home
+}
+
+#[test]
+fn publish_writes_a_draft_without_private_links() {
+    let home = publish_home();
+    let out = home.stet(&["publish", "--json", "Notes/post.md"]);
+    assert_eq!(out.status, 0, "{}{}", out.stdout, out.stderr);
+    home.snapshot("publish", &out.json());
+    let page =
+        std::fs::read_to_string(home.root.join("home/site/content/articles/post.md")).unwrap();
+    assert_eq!(
+        page,
+        "---\ntitle: \"Backups that work\"\ndate: 2026-10-04\ndraft: true\n---\n\n\
+         See the plan, [Litestream](https://litestream.io)\nand [Life's note](https://github.com/gshaw/Life/blob/main/x.md).\n\n\
+         \n\n## Steps\n\nStop the old machine first.\n"
+    );
+    let again = home.stet(&["publish", "Notes/post.md"]);
+    assert_eq!(again.status, 1);
+    assert!(again.stderr.contains("--force"), "{}", again.stderr);
+    let forced = home.stet(&["publish", "--force", "--slug", "Backups", "Notes/post.md"]);
+    assert!(
+        forced.stdout.ends_with("articles/backups.md\n"),
+        "{}",
+        forced.stdout
+    );
+}
+
+#[test]
+fn publish_refuses_secrets_flags_and_private_repos() {
+    let home = publish_home();
+    home.write(
+        "home/Repo/Notes/keys.md",
+        "# Keys\n\n⚠️ publish-review: door codes\n\ntoken: ghp_abcdefghijklmnopqrstuvwxyz0123456789\n",
+    );
+    let out = home.stet(&["publish", "--json", "Notes/keys.md"]);
+    assert_eq!(out.status, 1);
+    home.snapshot("publish-refused", &out.json());
+
+    let mut toml = std::fs::read_to_string(home.repo().join(".stet.toml")).unwrap();
+    toml.insert_str(0, "never_publish = [\"Notes/post.md\"]\n");
+    std::fs::write(home.repo().join(".stet.toml"), &toml).unwrap();
+    let out = home.stet(&["publish", "Notes/post.md"]);
+    assert!(out.stderr.contains("never_publish"), "{}", out.stderr);
+
+    std::fs::write(
+        home.repo().join(".stet.toml"),
+        format!("publish = false\n{toml}"),
+    )
+    .unwrap();
+    let out = home.stet(&["publish", "Notes/post.md"]);
+    assert_eq!(out.status, 1);
+    assert!(
+        out.stderr.contains("Repo notes are never published"),
+        "{}",
+        out.stderr
+    );
+    assert!(
+        !home
+            .root
+            .join("home/site/content/articles/post.md")
+            .exists()
+    );
+}

@@ -208,3 +208,35 @@ Exit 0 whatever is waiting.
   when stet ran `git init`; a folder that already had an empty `.git` keeps it.
 - `next`: what's left to do by hand, in order.
 - Exit 1, with nothing written, when `dir` holds anything but `.git` and `.DS_Store`.
+
+## `stet publish <note> --json`
+
+Writes the note into the site's articles folder (`[publish]` in the config file) as a
+Hugo draft, and prints:
+
+```json
+{
+  "schema": 1,
+  "source": "/Users/gerry/Documents/Workshop/Web/web-app-recovery.md",
+  "target": "/Users/gerry/Developer/gshaw.ca/content/articles/web-app-recovery.md",
+  "title": "Web app backup and recovery",
+  "slug": "web-app-recovery",
+  "links": [{ "line": 136, "url": "../Tooling/healthchecks.md", "action": "unlinked" }]
+}
+```
+
+- `links`: every link changed, by line in the source note. `unlinked`: the link became its
+  text. `removed`: an image, autolink or reference definition pointing into a private repo
+  was dropped.
+- A refusal exits 1 with an error document whose `reasons` list every problem, by line,
+  never quoting the secret:
+
+```json
+{
+  "schema": 1,
+  "error": "refused to publish ~/Documents/Workshop/Ideas/2026/stet.md",
+  "reasons": ["line 39: flagged ⚠️ publish-review"]
+}
+```
+
+- An existing article of the same name is an error unless `--force`.

@@ -15,6 +15,7 @@ pub mod help;
 pub mod inbox;
 pub mod init;
 pub mod markdown;
+pub mod publish;
 pub mod rules;
 pub mod sync;
 pub mod tools;
