@@ -62,6 +62,7 @@ impl Home {
             ("STET_CSPELL", tool("cspell")),
             ("STET_MARKDOWNLINT", tool("markdownlint-cli2")),
             ("STET_MISE", tool("mise")),
+            ("STET_NODE", tool("node")),
             ("FAKE_LOG", path("fake/calls.log")),
             ("FAKE_DIR", path("fake")),
         ];
@@ -117,7 +118,9 @@ impl Home {
 
     fn snapshot(&self, name: &str, value: &Value) {
         let root = regex_escape(&self.root.display().to_string());
-        insta::with_settings!({ filters => vec![(root.as_str(), "[ROOT]")] }, {
+        let repo = regex_escape(env!("CARGO_MANIFEST_DIR"));
+        let filters = vec![(root.as_str(), "[ROOT]"), (repo.as_str(), "[STET]")];
+        insta::with_settings!({ filters => filters }, {
             insta::assert_json_snapshot!(name, value);
         });
     }
@@ -354,4 +357,25 @@ fn help_topics_print() {
     }
     assert_eq!(home.stet(&["help", "nope"]).status, 1);
     assert_eq!(home.stet(&["nope"]).status, 64);
+}
+
+#[test]
+fn doctor_reports_each_part() {
+    let home = Home::new();
+    home.stet(&["sync"]);
+    for tool in ["node", "prettier", "cspell", "markdownlint-cli2"] {
+        home.fake(tool, &format!("{tool} 1.0.0\n"), 0);
+    }
+    let out = home.stet(&["doctor", "--json"]);
+    assert_eq!(out.status, 0, "{}", out.stdout);
+    home.snapshot("doctor-no-config", &out.json());
+    home.write(
+        "home/.config/stet/config.toml",
+        "repos = [\"~/Repo\", \"~/Gone\"]\n[publish]\nsite = \"~/site\"\n",
+    );
+    home.write("home/site/content/articles/_index.md", "");
+    home.write("home/Repo/.prettierrc.yaml", "drifted\n");
+    let report = home.stet(&["doctor", "--json"]).json();
+    home.snapshot("doctor", &report);
+    assert_eq!(report["ok"], false);
 }

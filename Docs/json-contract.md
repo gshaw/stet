@@ -116,3 +116,29 @@ repo in `~/.config/stet/config.toml`.
 ```
 
 `action` is `written` or `unchanged`. Exit 0.
+
+## `stet doctor --json`
+
+```json
+{
+  "schema": 1,
+  "ok": true,
+  "checks": [
+    { "id": "config", "status": "ok", "message": "~/.config/stet/config.toml: 5 repos" },
+    { "id": "mise", "status": "ok", "message": "/Users/gerry/.local/bin/mise" },
+    { "id": "node", "status": "ok", "message": "v24.4.1" },
+    { "id": "prettier", "status": "ok", "message": "3.8.3" },
+    { "id": "cspell", "status": "ok", "message": "9.1.5" },
+    { "id": "markdownlint-cli2", "status": "ok", "message": "v0.22.1 (markdownlint v0.40.0)" },
+    { "id": "repo:Workshop", "status": "ok", "message": "~/Documents/Workshop: configs in sync" },
+    { "id": "publish", "status": "ok", "message": "articles go to ~/Developer/gshaw.ca/content/articles" }
+  ]
+}
+```
+
+- `status`: `ok`, `warning` or `error`. `ok` is false, and the exit code 1, when any check
+  is an error. A missing config file or `[publish]` is only a warning.
+- The tool versions come from running each one through `mise exec` in the first repo that
+  exists, so they're the versions that repo pins.
+- One `repo:<name>` check per configured repo: the folder exists, `.stet.toml` reads, and
+  the generated configs match it.

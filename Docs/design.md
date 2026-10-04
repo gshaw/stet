@@ -63,7 +63,9 @@ file system ignores case and GitHub doesn't.
 ```
 
 The repo list and the publish target come from the config file, never from code, so
-nothing in stet assumes `~/Documents` or `gshaw`.
+nothing in stet assumes `~/Documents` or `gshaw`. `stet doctor` checks all of it: mise
+and the tools run (through `mise exec`, at the versions a repo pins), the config reads,
+each repo exists and is in sync, and the publish target is there.
 
 ## Building
 
