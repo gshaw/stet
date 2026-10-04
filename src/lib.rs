@@ -8,6 +8,7 @@ pub mod check;
 pub mod cli;
 pub mod config;
 pub mod contract;
+pub mod doctor;
 pub mod env;
 pub mod generate;
 pub mod help;
@@ -17,3 +18,12 @@ pub mod sync;
 pub mod tools;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// An error and its causes on one line: "can't read x: missing field".
+pub fn chain(error: &miette::Report) -> String {
+    error
+        .chain()
+        .map(|e| e.to_string())
+        .collect::<Vec<_>>()
+        .join(": ")
+}

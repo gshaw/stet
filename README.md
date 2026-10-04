@@ -27,6 +27,7 @@ stet check --check-only   # change nothing, as CI does
 stet check --warnings     # list the warnings too, not just the count
 stet check --all          # every repo in ~/.config/stet/config.toml
 stet sync                 # rewrite the tool configs from .stet.toml
+stet doctor               # mise, Node and the tools run; every repo is in sync
 ```
 
 Each repo's `.stet.toml` holds only what it does differently; `stet help config` has every

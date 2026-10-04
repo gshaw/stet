@@ -1,0 +1,55 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "checks": [
+    {
+      "id": "config",
+      "message": "~/.config/stet/config.toml: 2 repos",
+      "status": "ok"
+    },
+    {
+      "id": "mise",
+      "message": "[STET]/tests/fixtures/bin/mise",
+      "status": "ok"
+    },
+    {
+      "id": "node",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "prettier",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "cspell",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "markdownlint-cli2",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "repo:Repo",
+      "message": "~/Repo: .prettierrc.yaml differs from .stet.toml; run `stet sync`",
+      "status": "error"
+    },
+    {
+      "id": "repo:Gone",
+      "message": "no folder at ~/Gone",
+      "status": "error"
+    },
+    {
+      "id": "publish",
+      "message": "articles go to ~/site/content/articles",
+      "status": "ok"
+    }
+  ],
+  "ok": false,
+  "schema": 1
+}

@@ -12,7 +12,10 @@ use serde::Serialize;
 
 use crate::check::{self, Options};
 use crate::config::{Global, Repo};
-use crate::contract::{CheckReport, ErrorReport, SCHEMA, Severity, SyncAction, SyncReport};
+use crate::contract::{
+    CheckReport, CheckStatus, ErrorReport, SCHEMA, Severity, SyncAction, SyncReport,
+};
+use crate::doctor;
 use crate::env::Env;
 use crate::help;
 use crate::sync;
@@ -38,6 +41,8 @@ enum Command {
     Check(CheckArgs),
     /// Write the shared tool configs into a repo from its .stet.toml.
     Sync(RepoArgs),
+    /// Check that mise, Node and the tools run, the config reads, and every repo is in sync.
+    Doctor(JsonFlag),
     /// Print the completion script for a shell.
     Completion { shell: Shell },
     /// Print the usage spec (KDL) that describes every command and flag.
@@ -98,6 +103,7 @@ impl Command {
         match self {
             Command::Check(a) => a.repos.output.json,
             Command::Sync(a) => a.output.json,
+            Command::Doctor(f) => f.json,
             Command::Completion { .. } | Command::Usage | Command::Help(_) => false,
         }
     }
@@ -123,11 +129,7 @@ pub fn main() -> ExitCode {
     match run(cli.command) {
         Ok(code) => ExitCode::from(code),
         Err(error) => {
-            let message = error
-                .chain()
-                .map(|e| e.to_string())
-                .collect::<Vec<_>>()
-                .join(": ");
+            let message = crate::chain(&error);
             if json {
                 print_json(&ErrorReport {
                     schema: SCHEMA,
@@ -147,6 +149,7 @@ fn run(command: Command) -> Result<u8> {
     match command {
         Command::Check(a) => check_command(&env, a),
         Command::Sync(a) => sync_command(&env, a),
+        Command::Doctor(f) => doctor_command(&env, f.json),
         Command::Completion { shell } => {
             print!("{}", completion(shell)?);
             Ok(0)
@@ -275,6 +278,24 @@ fn sync_command(env: &Env, args: RepoArgs) -> Result<u8> {
         }
     }
     Ok(0)
+}
+
+fn doctor_command(env: &Env, json: bool) -> Result<u8> {
+    let global = Global::load(env)?;
+    let report = doctor::doctor(&global, &Tools::new(env));
+    if json {
+        print_json(&report);
+    } else {
+        for check in &report.checks {
+            let status = match check.status {
+                CheckStatus::Ok => "ok",
+                CheckStatus::Warning => "warn",
+                CheckStatus::Error => "error",
+            };
+            println!("{status:<5} {:<20} {}", check.id, check.message);
+        }
+    }
+    Ok(if report.ok { 0 } else { 1 })
 }
 
 fn help_command(args: HelpArgs) -> Result<u8> {

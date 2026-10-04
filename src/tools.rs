@@ -88,7 +88,11 @@ impl Tools {
             _ => ("node", "STET_NODE"),
         };
         let out = self.run(name, key, root, &["--version"])?;
-        let first = out.text.lines().next().unwrap_or("").trim().to_string();
+        let first = out.text.lines().next().unwrap_or("").trim();
+        let first = first
+            .strip_prefix(&format!("{name} "))
+            .unwrap_or(first)
+            .to_string();
         if out.code == 0 {
             Ok(first)
         } else {

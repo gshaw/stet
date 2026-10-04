@@ -1,0 +1,45 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "checks": [
+    {
+      "id": "config",
+      "message": "no ~/.config/stet/config.toml; --all, inbox and publish need one (stet help config)",
+      "status": "warning"
+    },
+    {
+      "id": "mise",
+      "message": "[STET]/tests/fixtures/bin/mise",
+      "status": "ok"
+    },
+    {
+      "id": "node",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "prettier",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "cspell",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "markdownlint-cli2",
+      "message": "1.0.0",
+      "status": "ok"
+    },
+    {
+      "id": "publish",
+      "message": "no [publish] in ~/.config/stet/config.toml; stet publish needs a site",
+      "status": "warning"
+    }
+  ],
+  "ok": true,
+  "schema": 1
+}
