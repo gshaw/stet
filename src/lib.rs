@@ -13,6 +13,7 @@ pub mod env;
 pub mod generate;
 pub mod help;
 pub mod inbox;
+pub mod init;
 pub mod markdown;
 pub mod rules;
 pub mod sync;

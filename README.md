@@ -35,6 +35,18 @@ key, and `stet help rules` the house rules. Every command takes `--json`; the do
 and exit codes are in [Docs/json-contract.md](Docs/json-contract.md). How stet works is
 in [Docs/design.md](Docs/design.md), and why in [Docs/decisions.md](Docs/decisions.md).
 
+## Starting a repo
+
+```sh
+stet init ~/Documents/Music
+```
+
+The bootstrap from Workshop's `Meta/README.md` as one command: `git init`, `.stet.toml`
+and the generated configs, `.gitignore`, a `README.md` and an `AGENTS.md` with the
+universal rules and ❌ where only a person can fill in, the `CLAUDE.md` symlink, and an
+untracked `Inbox/`. The new repo passes `stet check` as it stands. It prints what's left:
+the GitHub repo, the config entry, the first content.
+
 ## The inbox
 
 ```sh

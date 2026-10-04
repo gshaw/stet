@@ -1,0 +1,9 @@
+node_modules/
+.claude/settings.local.json
+.DS_Store
+
+# The drop zone is scratch space, never tracked. Anything dumped here is either absorbed
+# into a domain file, where the knowledge becomes tracked, or filed beside the Markdown
+# that explains it, then deleted from here. Keeping it untracked means junk and
+# duplicates never enter this history, which matters because git history is permanent.
+Inbox/

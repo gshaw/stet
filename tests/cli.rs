@@ -430,3 +430,37 @@ fn inbox_says_when_the_mail_section_is_missing() {
     );
     assert!(report["repos"][0].get("mail").is_none());
 }
+
+#[test]
+fn init_starts_a_repo_that_passes_its_own_check() {
+    let home = Home::new();
+    let out = home.stet_in(&home.root, &["init", "--json", "home/Music"]);
+    assert_eq!(out.status, 0, "{}", out.stderr);
+    home.snapshot("init", &out.json());
+    let repo = home.root.join("home/Music");
+    assert_eq!(
+        std::fs::read_link(repo.join("CLAUDE.md")).unwrap(),
+        Path::new("AGENTS.md")
+    );
+    assert!(repo.join(".git").is_dir() && repo.join("Inbox").is_dir());
+    let readme = std::fs::read_to_string(repo.join("README.md")).unwrap();
+    assert!(readme.starts_with("# Music\n"));
+    let check = home
+        .stet_in(&repo, &["check", "--rules-only", "--json"])
+        .json();
+    assert_eq!(check["errors"], 0, "{check}");
+    assert_eq!(check["warnings"], 0, "{check}");
+    let inbox = home
+        .stet_in(&home.root, &["inbox", "--json", "home/Music"])
+        .json();
+    assert!(inbox["repos"][0].get("problem").is_none(), "{inbox}");
+}
+
+#[test]
+fn init_refuses_a_folder_with_files() {
+    let home = Home::new();
+    let out = home.stet_in(&home.root, &["init", "home/Repo"]);
+    assert_eq!(out.status, 1);
+    assert!(out.stderr.contains("isn't empty"), "{}", out.stderr);
+    assert!(!home.repo().join("CLAUDE.md").exists());
+}
