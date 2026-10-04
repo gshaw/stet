@@ -8,6 +8,7 @@ the tool configs from it, and `stet check` fails when a repo's copy differs.
 # Top-level keys come before any [table].
 ci = true        # write .github/workflows/static-analysis.yml (default true)
 publish = true   # `stet publish` may copy notes from this repo (default true)
+never_publish = ["HomeAutomation/"]   # paths publish refuses even so
 
 [[ignore]]
 paths = ["Journal/Diary/2*.md", "Writing/pieces/"]

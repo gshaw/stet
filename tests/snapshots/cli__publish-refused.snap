@@ -1,0 +1,13 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "error": "refused to publish ~/Repo/Notes/keys.md",
+  "reasons": [
+    "line 3: flagged ⚠️ publish-review",
+    "line 5: looks like a GitHub token",
+    "line 5: looks like a password or key"
+  ],
+  "schema": 1
+}

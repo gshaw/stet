@@ -81,6 +81,27 @@ It runs `git init` and stops there. Creating the GitHub repo, the config entry a
 first commit are printed as next steps: they're decisions, and the first content should
 be the first commit.
 
+## `stet publish`
+
+Workshop notes are written as publishing candidates and lifted onto gshaw.ca one at a
+time, the way recipes come over from Life. `stet publish` does the copying and the checks
+a person would forget; the decision to publish, the edit and the deploy stay Gerry's.
+
+- **Refusals come first and are conservative.** A repo with `publish = false` is refused
+  outright. So is a path under `never_publish`, a note still in `Inbox/`, a note that
+  mentions ⚠️ publish-review, and any line that looks like a private key, an API key or
+  token, a `password:`-style assignment, an account number or a card number (Luhn
+  checked). A false alarm costs an edit; a miss costs a rotated key and a public page.
+  The reasons give line numbers, never the secret.
+- **Private links become text.** A relative link, a `file:` link, or a GitHub link into
+  any configured repo (found from each repo's `origin`) would 404 publicly, so the link
+  becomes its text. Images and reference definitions pointing there are dropped. Each
+  change is reported by line.
+- **The page is a Hugo draft:** `title` from the note's frontmatter or first `# `
+  heading (which the layout prints, so it leaves the body), `date` today, `draft: true`,
+  named after the note less any date prefix. stet writes the one file and prints its
+  path. It never runs git and never deploys.
+
 ## Where things live
 
 ```text

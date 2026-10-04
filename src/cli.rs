@@ -13,14 +13,15 @@ use serde::Serialize;
 use crate::check::{self, Options};
 use crate::config::{Global, Repo};
 use crate::contract::{
-    CheckReport, CheckStatus, ErrorReport, InboxReport, ItemKind, SCHEMA, Severity, SyncAction,
-    SyncReport,
+    CheckReport, CheckStatus, ErrorReport, InboxReport, ItemKind, LinkAction, SCHEMA, Severity,
+    SyncAction, SyncReport,
 };
 use crate::doctor;
 use crate::env::Env;
 use crate::help;
 use crate::inbox;
 use crate::init;
+use crate::publish;
 use crate::sync;
 use crate::tools::Tools;
 
@@ -48,6 +49,8 @@ enum Command {
     Inbox(InboxArgs),
     /// Start a new knowledge repo in an empty folder: configs, README, AGENTS, Inbox/, git.
     Init(InitArgs),
+    /// Copy one note into the site repo as an article draft, if it's safe to make public.
+    Publish(PublishArgs),
     /// Check that mise, Node and the tools run, the config reads, and every repo is in sync.
     Doctor(JsonFlag),
     /// Print the completion script for a shell.
@@ -121,6 +124,20 @@ struct InitArgs {
     output: JsonFlag,
 }
 
+#[derive(Debug, clap::Args)]
+struct PublishArgs {
+    /// The note, a Markdown file in a knowledge repo.
+    note: PathBuf,
+    /// The article's file name, without .md. Default: the note's, less any date prefix.
+    #[arg(long)]
+    slug: Option<String>,
+    /// Replace an article of the same name.
+    #[arg(long)]
+    force: bool,
+    #[command(flatten)]
+    output: JsonFlag,
+}
+
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum Shell {
     Fish,
@@ -136,6 +153,7 @@ impl Command {
             Command::Doctor(f) => f.json,
             Command::Inbox(a) => a.output.json,
             Command::Init(a) => a.output.json,
+            Command::Publish(a) => a.output.json,
             Command::Completion { .. } | Command::Usage | Command::Help(_) => false,
         }
     }
@@ -183,6 +201,7 @@ fn run(command: Command) -> Result<u8> {
         Command::Sync(a) => sync_command(&env, a),
         Command::Doctor(f) => doctor_command(&env, f.json),
         Command::Inbox(a) => inbox_command(&env, a),
+        Command::Publish(a) => publish_command(&env, a),
         Command::Init(a) => {
             let report = init::init(&env, &a.dir, a.name.as_deref())?;
             if a.output.json {
@@ -392,6 +411,48 @@ fn human_size(bytes: u64) -> String {
         b if b < 1_000 => format!("{b} B"),
         b if b < 1_000_000 => format!("{:.0} KB", b as f64 / 1e3),
         b => format!("{:.1} MB", b as f64 / 1e6),
+    }
+}
+
+fn publish_command(env: &Env, args: PublishArgs) -> Result<u8> {
+    let global = Global::load(env)?;
+    let request = publish::Request {
+        note: &args.note,
+        slug: args.slug.as_deref(),
+        force: args.force,
+    };
+    match publish::publish(env, &global, &request)? {
+        publish::Outcome::Published(report) => {
+            if args.output.json {
+                print_json(&report);
+            } else {
+                for link in &report.links {
+                    let what = match link.action {
+                        LinkAction::Unlinked => "unlinked",
+                        LinkAction::Removed => "removed",
+                    };
+                    println!("  line {}: {what} {}", link.line, link.url);
+                }
+                println!("{}", report.target);
+            }
+            Ok(0)
+        }
+        publish::Outcome::Refused(refused) => {
+            let error = format!("refused to publish {}", refused.note);
+            if args.output.json {
+                print_json(&ErrorReport {
+                    schema: SCHEMA,
+                    error,
+                    reasons: refused.reasons,
+                });
+            } else {
+                eprintln!("stet: {error}:");
+                for reason in &refused.reasons {
+                    eprintln!("  {reason}");
+                }
+            }
+            Ok(1)
+        }
     }
 }
 

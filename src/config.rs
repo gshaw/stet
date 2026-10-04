@@ -155,6 +155,9 @@ pub struct RepoConfig {
     /// Whether `stet publish` may copy notes from this repo to a public site.
     #[serde(default = "yes")]
     pub publish: bool,
+    /// gitignore-style paths `stet publish` refuses even when `publish` is true.
+    #[serde(default)]
+    pub never_publish: Vec<String>,
 }
 
 fn yes() -> bool {

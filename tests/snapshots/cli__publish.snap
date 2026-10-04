@@ -1,0 +1,23 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "links": [
+    {
+      "action": "unlinked",
+      "line": 3,
+      "url": "plan.md#steps"
+    },
+    {
+      "action": "removed",
+      "line": 6,
+      "url": "diagram.png"
+    }
+  ],
+  "schema": 1,
+  "slug": "post",
+  "source": "[ROOT]/home/Repo/Notes/post.md",
+  "target": "[ROOT]/home/site/content/articles/post.md",
+  "title": "Backups that work"
+}

@@ -59,6 +59,20 @@ The repos come from `~/.config/stet/config.toml` (`repos = [...]`). The mail rul
 each repo's "Mail that belongs here" section in its `AGENTS.md`, read as data: the
 bullets, the "Not here:" line, and any notes. The prose stays the source.
 
+## Publishing a note
+
+```sh
+stet publish ~/Documents/Workshop/Web/web-app-recovery.md
+```
+
+Copies one note into the site repo from `[publish]` in the config file (gshaw.ca's
+`content/articles/`) as a Hugo draft: front matter with the title, today's date and
+`draft: true`. It refuses a note from a repo with `publish = false` (Health, Finances,
+Arniston), under a repo's `never_publish` paths (Workshop's `HomeAutomation/`), flagged
+⚠️ publish-review, or that looks like it holds a key, token, password, account or card
+number. Links into the private repos become plain text and their images are dropped. It
+prints the new file's path and never commits, pushes or deploys: Gerry reads it first.
+
 ## Developing
 
 `mise run test`, `mise run lint`, `mise run fmt`, and `mise run snapshots` to review changed

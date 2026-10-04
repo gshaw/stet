@@ -5,6 +5,27 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-10-04 · inbox, init and publish
+
+- **`stet inbox` reads the mail rules from AGENTS.md** rather than moving them into
+  config. They're prose people and agents edit; stet parses the section's bullets, its
+  "Not here:" paragraph and its notes, and reports a repo without one.
+- **`stet init` stops at `git init`.** The GitHub repo, the config entry and the first
+  commit are printed as next steps. What only a person knows is a ❌ line in the
+  templates, so a new repo passes `stet check` and an agent can see what's missing.
+- **`stet publish` refuses more than the brief named.** Health and Finances have
+  `publish = false` as asked; so does Arniston, since its notes are the Company's and
+  name third parties, which seemed the safer default (flip it in its `.stet.toml`).
+  Workshop's `HomeAutomation/` is under a new `never_publish` key: AGENTS.md says it
+  holds garage fob IDs and access plans that need review before anything goes public,
+  and the fob note wasn't flagged, so a flag-only check would have let it through.
+- **The secret scan has no override.** A false alarm is fixed by editing the note. One
+  was found on real notes and fixed in the scanner: an environment variable's name
+  (`SOPS_AGE_KEY`) after "secret:".
+- **Private links are found from git remotes,** not a hard-coded list, so stet holds no
+  repo names. A link to a private repo that isn't configured, like a code repo, is kept
+  ⚠️; Gerry's read of the draft is the check for those.
+
 ## 2026-10-03 · Why stet exists, and how it starts
 
 Five knowledge repos each carried their own copy of the Prettier, cspell and markdownlint
