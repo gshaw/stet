@@ -1,0 +1,11 @@
+# A small knowledge repo for the tests.
+
+[[ignore]]
+paths = ["Verbatim/"]
+reason = "Kept exactly as written."
+
+[frontmatter]
+allow = ["Drafts/"]
+
+[mise]
+check_tasks = ["extra-check"]

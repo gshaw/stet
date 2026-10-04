@@ -1,0 +1,109 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "errors": 7,
+  "ok": false,
+  "repos": [
+    {
+      "errors": 7,
+      "findings": [
+        {
+          "file": "Notes/a.md",
+          "line": 3,
+          "message": "Headings should be surrounded by blank lines [Expected: 1; Actual: 0; Below]",
+          "rule": "MD022/blanks-around-headings",
+          "severity": "error",
+          "tool": "markdownlint"
+        },
+        {
+          "file": "Notes/a.md",
+          "line": 3,
+          "message": "a superseded block needs the date it was superseded",
+          "rule": "superseded-date",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "column": 4,
+          "file": "Notes/a.md",
+          "line": 7,
+          "message": "Unknown word (curently); a real word goes in .cspell.yaml",
+          "rule": "unknown-word",
+          "severity": "error",
+          "tool": "cspell"
+        },
+        {
+          "file": "Notes/front.md",
+          "line": 1,
+          "message": "YAML frontmatter; these repos are plain Markdown (allow a path in .stet.toml)",
+          "rule": "frontmatter",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "README.md",
+          "line": 4,
+          "message": "Notes/missing.md: no such file",
+          "rule": "link",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "README.md",
+          "line": 4,
+          "message": "notes/a.md: the file is Notes/a.md; case matters on GitHub",
+          "rule": "link",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "README.md",
+          "line": 5,
+          "message": "Notes/a.md#nope: no heading #nope",
+          "rule": "anchor",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "Notes/a.md",
+          "line": 9,
+          "message": "\"currently\" with no date nearby",
+          "rule": "undated-now",
+          "severity": "warning",
+          "tool": "stet"
+        }
+      ],
+      "formatted": [
+        "Notes/a.md"
+      ],
+      "name": "Repo",
+      "ok": false,
+      "path": "[ROOT]/home/Repo",
+      "tools": [
+        {
+          "name": "prettier",
+          "ok": true
+        },
+        {
+          "files": 6,
+          "name": "cspell",
+          "ok": false
+        },
+        {
+          "files": 5,
+          "name": "markdownlint",
+          "ok": false
+        },
+        {
+          "name": "mise:extra-check",
+          "ok": true
+        }
+      ],
+      "warnings": 1
+    }
+  ],
+  "schema": 1,
+  "warnings": 1
+}

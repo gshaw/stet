@@ -1,0 +1,71 @@
+---
+source: tests/cli.rs
+expression: value
+---
+{
+  "errors": 5,
+  "ok": false,
+  "repos": [
+    {
+      "errors": 5,
+      "findings": [
+        {
+          "file": "Notes/a.md",
+          "line": 3,
+          "message": "a superseded block needs the date it was superseded",
+          "rule": "superseded-date",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "Notes/front.md",
+          "line": 1,
+          "message": "YAML frontmatter; these repos are plain Markdown (allow a path in .stet.toml)",
+          "rule": "frontmatter",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "README.md",
+          "line": 4,
+          "message": "Notes/missing.md: no such file",
+          "rule": "link",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "README.md",
+          "line": 4,
+          "message": "notes/a.md: the file is Notes/a.md; case matters on GitHub",
+          "rule": "link",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "README.md",
+          "line": 5,
+          "message": "Notes/a.md#nope: no heading #nope",
+          "rule": "anchor",
+          "severity": "error",
+          "tool": "stet"
+        },
+        {
+          "file": "Notes/a.md",
+          "line": 9,
+          "message": "\"currently\" with no date nearby",
+          "rule": "undated-now",
+          "severity": "warning",
+          "tool": "stet"
+        }
+      ],
+      "formatted": [],
+      "name": "Repo",
+      "ok": false,
+      "path": "[ROOT]/home/Repo",
+      "tools": [],
+      "warnings": 1
+    }
+  ],
+  "schema": 1,
+  "warnings": 1
+}
