@@ -322,23 +322,26 @@ fn glob(path: &str) -> String {
     out
 }
 
-/// markdownlint-cli2's globs: every Markdown file, and each ignore as a `#` glob.
+/// markdownlint-cli2's globs: every Markdown file, and each ignore as a `#` glob. A bare
+/// name like `node_modules/` matches at any depth, as it does for Prettier.
 pub fn markdownlint_globs(config: &RepoConfig) -> Vec<String> {
     let mut args = vec!["**/*.md".to_string(), "#.git".to_string()];
     for ignore in ignores(config, Tool::Markdownlint) {
         for path in &ignore.paths {
-            args.push(format!("#{}", path.trim_end_matches('/')));
+            args.push(format!("#{}", glob(path)));
         }
     }
     args
 }
 
-/// markdownlint's rules, passed with `--config`.
+/// markdownlint's rules, passed with `--config`. It skips `.gitignore`d files, as Prettier
+/// and cspell do, so a code repo's `deps/` and `_build/` need no ignore entry.
 pub fn markdownlint_config() -> String {
     format!(
         "{HEADER}\n\
          # Rules: https://github.com/DavidAnson/markdownlint/blob/main/doc/Rules.md\n\
          # Prettier is the formatter of record, so the rules it owns are off here.\n\
+         gitignore: true\n\
          config:\n  \
            default: true\n  \
            MD013: false # line length — handled by Prettier / proseWrap\n  \
@@ -457,9 +460,10 @@ mod tests {
     }
 
     #[test]
-    fn markdownlint_strips_the_slash() {
+    fn markdownlint_ignores_match_at_any_depth() {
         let globs = markdownlint_globs(&RepoConfig::default());
-        assert!(globs.contains(&"#Inbox".to_string()));
-        assert!(globs.contains(&"#**/.build".to_string()));
+        assert!(globs.contains(&"#**/Inbox/**".to_string()));
+        assert!(globs.contains(&"#**/node_modules/**".to_string()));
+        assert!(globs.contains(&"#**/.build/**".to_string()));
     }
 }

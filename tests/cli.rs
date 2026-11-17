@@ -310,8 +310,8 @@ fn check_runs_the_tools_in_order_and_parses_them() {
                 .to_string(),
             format!("cspell lint --no-progress --no-color -c {cspell} ."),
             format!(
-                "markdownlint-cli2 --config {markdownlint} **/*.md #.git #node_modules #Inbox \
-                 #**/.build #Verbatim"
+                "markdownlint-cli2 --config {markdownlint} **/*.md #.git #**/node_modules/** \
+                 #**/Inbox/** #**/.build/** #**/Verbatim/**"
             ),
             "mise run --quiet extra-check".to_string(),
         ]

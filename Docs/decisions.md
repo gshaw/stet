@@ -5,6 +5,14 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-11-17 · markdownlint skips what Prettier and cspell skip
+
+The first code repos showed markdownlint reading what the other two tools skip: am's
+`worker/node_modules` (about 1,400 findings, because `#node_modules` only matched at the
+root) and sarduty's gitignored `deps/` and `_build/`. Ignores now become the same
+any-depth globs Prettier gets, and markdownlint's config sets `gitignore: true`. The six
+knowledge repos read the same files as before.
+
 ## 2026-11-17 · stet checks itself
 
 stet is now a `kind = "code"` repo like the others: hooks through hk with stet's
