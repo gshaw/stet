@@ -1,10 +1,18 @@
-amends "package://github.com/jdx/hk/releases/download/v2.3.0/hk@2.3.0#/Config.pkl"
-import "package://github.com/jdx/hk/releases/download/v2.3.0/hk@2.3.0#/Builtins.pkl"
+amends "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v2.12.0/hk@2.12.0#/Builtins.pkl"
 
-// hk builds the pre-commit, check and fix hooks from these steps.
+// Check-only and no stash, like every repo's hook. Becomes a generated hk.pkl with
+// kind = "code" once 0.2.0 is released.
+hooks {
+  ["pre-commit"] {
+    fix = false
+    stash = "none"
+  }
+}
+
 steps {
-    ["cargo-fmt"] = Builtins.cargo_fmt
-    ["cargo-clippy"] = (Builtins.cargo_clippy) {
-        check = "cargo clippy --all-targets --quiet -- -D warnings"
-    }
+  ["cargo-fmt"] = Builtins.cargo_fmt
+  ["cargo-clippy"] = (Builtins.cargo_clippy) {
+    check = "cargo clippy --all-targets --quiet -- -D warnings"
+  }
 }
