@@ -23,10 +23,6 @@ run = "hk fix --all"
 description = "Check everything, as the pre-commit hook does for staged files"
 run = "hk check --all"
 
-[tasks.fmt]
-description = "Format and apply clippy's fixes"
-run = "hk fix --all"
-
 [tasks.snapshots]
 description = "Rerun the tests and review changed JSON snapshots"
 run = "cargo insta test --review"
