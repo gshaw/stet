@@ -41,6 +41,10 @@ alone and get a known-good set of linters. Now:
   `github:` release through its version service first, and that service 404s for
   gshaw/stet (it has hk), so a plain install failed. Asking GitHub directly works; CI
   passes mise-action's token, so rate limits don't bite.
+- **Sibling-repo links are skipped in CI** (0.1.3). CI used to run only the three tools;
+  now it runs all of `stet check`, and Life's links to `../Arniston/` failed on a runner
+  that has Life alone. Those links are still checked on the Mac, where the repos sit side
+  by side.
 
 Looked at and not taken, measured on the same copies:
 

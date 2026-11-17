@@ -21,6 +21,9 @@ pub struct Options {
     /// Keep only findings in these repo-relative files (`--files`). Findings with no file,
     /// like a tool that failed to run, and config drift are always kept.
     pub only: Option<HashSet<String>>,
+    /// Check links that leave the repo, into a sibling repo. Off in CI (`CI` set), where
+    /// only this repo is checked out.
+    pub siblings: bool,
 }
 
 /// `--files` paths as the tools report them: relative to the repo root, with `/`.
@@ -94,7 +97,7 @@ pub fn check(repo: &Repo, tools: &Tools, options: &Options) -> RepoCheck {
             formatted.extend(outcome.formatted);
         }
     }
-    findings.extend(Rules::new(repo).check());
+    findings.extend(Rules::new(repo, options.siblings).check());
     if let Some(only) = &options.only {
         findings.retain(|f| {
             f.rule == "config-sync" || f.file.as_ref().is_none_or(|file| only.contains(file))

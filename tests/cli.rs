@@ -393,6 +393,30 @@ fn check_fails_when_a_config_drifts() {
 }
 
 #[test]
+fn sibling_links_are_checked_on_the_mac_not_in_ci() {
+    let mut home = Home::new();
+    home.write(
+        "home/Repo/Notes/sibling.md",
+        "[gone](../../Gone/README.md)\n",
+    );
+    home.stet(&["sync"]);
+    let args = [
+        "check",
+        "--rules-only",
+        "--json",
+        "--files",
+        "Notes/sibling.md",
+    ];
+    assert_eq!(
+        rules(&home.stet(&args).json()),
+        ["link Notes/sibling.md:1 error"]
+    );
+    home.env.push(("CI".into(), "true".into()));
+    let out = home.stet(&args);
+    assert_eq!(out.status, 0, "{}", out.stdout);
+}
+
+#[test]
 fn warnings_alone_pass() {
     let home = Home::new();
     for file in ["README.md", "Notes/a.md", "Notes/front.md"] {

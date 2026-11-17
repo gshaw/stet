@@ -46,15 +46,18 @@ static SCHEME: LazyLock<Regex> =
 
 pub struct Rules<'a> {
     repo: &'a Repo,
+    /// Check links into sibling repos; see `check::Options::siblings`.
+    siblings: bool,
     /// Folder listings, for exact-case lookups.
     dirs: HashMap<PathBuf, Option<HashSet<String>>>,
     anchors: HashMap<PathBuf, HashSet<String>>,
 }
 
 impl<'a> Rules<'a> {
-    pub fn new(repo: &'a Repo) -> Rules<'a> {
+    pub fn new(repo: &'a Repo, siblings: bool) -> Rules<'a> {
         Rules {
             repo,
+            siblings,
             dirs: HashMap::new(),
             anchors: HashMap::new(),
         }
@@ -172,7 +175,9 @@ impl<'a> Rules<'a> {
             };
             match normalize(&base.join(path.trim_start_matches('/'))) {
                 Some(p) => p,
-                // A sibling repo, read side by side on the Mac. It only has to exist.
+                // A sibling repo, read side by side on the Mac. It only has to exist, and
+                // is only checked there: CI has this repo alone.
+                None if !self.siblings => return None,
                 None => {
                     let outside = self.repo.root.join(from).parent()?.join(&path);
                     return (!outside.exists())
