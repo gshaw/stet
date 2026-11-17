@@ -28,6 +28,10 @@ expression: value
         },
         {
           "action": "written",
+          "path": "hk.pkl"
+        },
+        {
+          "action": "written",
           "path": ".github/workflows/static-analysis.yml"
         }
       ],

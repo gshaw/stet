@@ -99,6 +99,10 @@ struct CheckArgs {
     /// List every warning, not just the count.
     #[arg(long)]
     warnings: bool,
+    /// Report findings only in these files, as the pre-commit hook does with the staged
+    /// ones. The tools still read the whole repo; findings elsewhere are dropped.
+    #[arg(long, value_name = "FILE", num_args = 1.., conflicts_with = "all")]
+    files: Vec<PathBuf>,
 }
 
 #[derive(Debug, clap::Args)]
@@ -252,10 +256,18 @@ fn repos(env: &Env, args: &RepoArgs) -> Result<Vec<Repo>> {
 
 fn check_command(env: &Env, args: CheckArgs) -> Result<u8> {
     let tools = Tools::new(env);
-    let options = Options {
+    let mut options = Options {
         write: !args.check_only,
         tools: !args.rules_only,
+        only: None,
     };
+    let repos = repos(env, &args.repos)?;
+    if !args.files.is_empty() {
+        let [repo] = repos.as_slice() else {
+            return Err(miette!("--files works on one repo at a time"));
+        };
+        options.only = Some(check::relative(&repo.root, &args.files)?);
+    }
     let mut report = CheckReport {
         schema: SCHEMA,
         ok: true,
@@ -263,8 +275,8 @@ fn check_command(env: &Env, args: CheckArgs) -> Result<u8> {
         warnings: 0,
         repos: vec![],
     };
-    for repo in repos(env, &args.repos)? {
-        let result = check::check(&repo, &tools, options);
+    for repo in repos {
+        let result = check::check(&repo, &tools, &options);
         report.errors += result.errors;
         report.warnings += result.warnings;
         report.repos.push(result);

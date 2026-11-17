@@ -26,6 +26,7 @@ stet check                # the same: format, spell-check, lint, house rules
 stet check --check-only   # change nothing, as CI does
 stet check --warnings     # list the warnings too, not just the count
 stet check --all          # every repo in ~/.config/stet/config.toml
+stet check --check-only --files a.md b.md   # only findings in these, as the hook does
 stet sync                 # rewrite the tool configs from .stet.toml
 stet doctor               # mise, Node and the tools run; every repo is in sync
 ```
@@ -34,6 +35,19 @@ Each repo's `.stet.toml` holds only what it does differently; `stet help config`
 key, and `stet help rules` the house rules. Every command takes `--json`; the documents
 and exit codes are in [Docs/json-contract.md](Docs/json-contract.md). How stet works is
 in [Docs/design.md](Docs/design.md), and why in [Docs/decisions.md](Docs/decisions.md).
+
+## The pre-commit hook
+
+Every knowledge repo has a generated `hk.pkl`: before each commit,
+[hk](https://hk.jdx.dev) runs `stet check --check-only --files` on the staged Markdown
+files. Another session's untracked note can't block a commit; an unknown word in a staged
+file always does. Turn it on once per clone:
+
+```sh
+hk install --mise
+```
+
+`stet doctor` fails a repo without it.
 
 ## Starting a repo
 

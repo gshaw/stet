@@ -5,6 +5,27 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-11-17 · public, and a pre-commit hook through hk
+
+- **stet is public.** Its history was scanned first: no secrets (one fake AWS key in a
+  publish test), and the commit email was already public on other repos. Going public is
+  the first step to CI installing stet instead of running the tools on copied configs.
+- **The knowledge repos get a pre-commit hook, run by hk.** Twice on 2026-11-17 an agent
+  pushed Workshop commits while `mise run check` failed: it piped the check into `grep`,
+  so the chain saw grep's exit status. A rule in memory relies on the agent remembering;
+  a hook doesn't. Gerry chose hk for every hook, in these repos and the code repos.
+- **Pre-commit, not pre-push.** Arniston, Family and Finances have no remote, so a
+  pre-push hook would never run there, and a bad commit on `main` is already the problem.
+- **Staged files only, by filtering findings.** `stet check` read every file, untracked
+  ones included, so another session's draft blocked every commit. `--files` keeps only
+  findings in the named files. Filtering, not passing the files to each tool, keeps every
+  tool's ignore rules exactly as they are, and the run is short enough (about 3 s).
+- **hk lists the files; stet still never runs git.** No stash and no fixing in the hook:
+  sessions share a working tree, and a stash would pull their edits off disk.
+- **gh-signoff was looked at and dropped.** It posts a green commit status after checking
+  the tree is clean and pushed; it runs no check. Its ruleset needs a remote, GitHub Pro,
+  and binds no admin, and agents use Gerry's admin login.
+
 ## 2026-10-04 · inbox, init and publish
 
 - **`stet inbox` reads the mail rules from AGENTS.md** rather than moving them into

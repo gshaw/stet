@@ -18,6 +18,7 @@ pub const NODE: &str = "24.4.1";
 pub const CSPELL: &str = "9.1.5";
 pub const PRETTIER: &str = "3.8.3";
 pub const MARKDOWNLINT: &str = "0.22.1";
+pub const HK: &str = "2.3.0";
 
 /// Ignores every repo gets, for every tool and the house rules.
 pub fn shared_ignores() -> Vec<Ignore> {
@@ -88,6 +89,10 @@ pub fn files(config: &RepoConfig, existing: impl Fn(&str) -> Option<String>) -> 
         Generated {
             path: ".mise.toml",
             text: mise(config, existing(".mise.toml").as_deref()),
+        },
+        Generated {
+            path: "hk.pkl",
+            text: hk(),
         },
     ];
     if config.ci {
@@ -266,6 +271,7 @@ node = "{NODE}"
 "npm:cspell" = "{CSPELL}"
 "npm:prettier" = "{PRETTIER}"
 "npm:markdownlint-cli2" = "{MARKDOWNLINT}"
+hk = "{HK}"
 
 # The command to run before committing. stet formats, spell-checks and lints, one tool
 # after another, then applies the house rules. Without stet it runs the tools alone.
@@ -312,6 +318,33 @@ run = "prettier --check '**/*.md'"
         out.push_str(tail);
     }
     out
+}
+
+/// The pre-commit hook: `stet check` on the staged Markdown files only, so another
+/// session's untracked work can't block a commit. Check-only, and no stash: hk never moves
+/// another session's unstaged edits out of the way. `hk install --mise` turns it on.
+fn hk() -> String {
+    let header = HEADER.replacen('#', "//", 1);
+    format!(
+        r#"{header}
+// The pre-commit hook. hk passes the staged Markdown files; stet reports findings only in
+// those. Turn it on once per clone with `hk install --mise`.
+amends "package://github.com/jdx/hk/releases/download/v{HK}/hk@{HK}#/Config.pkl"
+
+hooks {{
+  ["pre-commit"] {{
+    fix = false
+    stash = "none"
+    steps {{
+      ["stet"] {{
+        glob = "**/*.md"
+        check = "PATH=\"$PATH:$HOME/.local/bin\" stet check --check-only --files {{{{files}}}}"
+      }}
+    }}
+  }}
+}}
+"#
+    )
 }
 
 fn workflow() -> String {

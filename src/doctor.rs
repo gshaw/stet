@@ -1,5 +1,7 @@
 //! `stet doctor`: everything `stet check` and the other commands need, checked once.
 
+use std::path::{Path, PathBuf};
+
 use crate::config::{Global, Repo};
 use crate::contract::{CheckStatus, DoctorCheck, DoctorReport, SCHEMA};
 use crate::sync;
@@ -65,6 +67,13 @@ pub fn doctor(global: &Global, tools: &Tools) -> DoctorReport {
             add(&id, CheckStatus::Error, format!("no folder at {shown}"));
             continue;
         }
+        if !hooked(&global.home, path) {
+            add(
+                &format!("hook:{name}"),
+                CheckStatus::Error,
+                format!("{shown}: no pre-commit hook; run `hk install --mise` there"),
+            );
+        }
         match Repo::load(path) {
             Ok(repo) => {
                 let drifted = sync::drifted(&repo);
@@ -119,4 +128,18 @@ pub fn doctor(global: &Global, tools: &Tools) -> DoctorReport {
         ok,
         checks,
     }
+}
+
+/// hk's pre-commit hook is set in the repo's git config or the global one. Read as text:
+/// stet never runs git. A repo with no `.git` folder, like a test fixture, has nothing to
+/// hook and passes.
+fn hooked(home: &Path, repo: &Path) -> bool {
+    let git = repo.join(".git");
+    if !git.is_dir() {
+        return true;
+    }
+    let has = |file: PathBuf| {
+        std::fs::read_to_string(file).is_ok_and(|t| t.contains("[hook \"hk-pre-commit\"]"))
+    };
+    has(git.join("config")) || has(home.join(".gitconfig"))
 }

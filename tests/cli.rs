@@ -278,6 +278,33 @@ fn check_only_never_writes() {
 }
 
 #[test]
+fn check_files_keeps_only_their_findings() {
+    let home = Home::new();
+    home.write("home/Repo/Notes/untracked.md", "[dead](nowhere.md)\n");
+    home.stet(&["sync"]);
+    let out = home.stet(&["check", "--rules-only", "--json", "--files", "Notes/a.md"]);
+    assert_eq!(out.status, 1, "{}", out.stderr);
+    assert_eq!(
+        rules(&out.json()),
+        [
+            "superseded-date Notes/a.md:3 error",
+            "undated-now Notes/a.md:9 warning"
+        ]
+    );
+    let sub = home.repo().join("Notes");
+    let out = home.stet_in(
+        &sub,
+        &["check", "--rules-only", "--json", "--files", "front.md"],
+    );
+    assert_eq!(rules(&out.json()), ["frontmatter Notes/front.md:1 error"]);
+    let out = home.stet(&["check", "--rules-only", "--files", "Drafts/post.md"]);
+    assert_eq!(out.status, 0, "{}", out.stdout);
+    let out = home.stet(&["check", "--rules-only", "--files", "/elsewhere/x.md"]);
+    assert_eq!(out.status, 1);
+    assert!(out.stderr.contains("isn't in"), "{}", out.stderr);
+}
+
+#[test]
 fn check_fails_when_a_config_drifts() {
     let home = Home::new();
     home.stet(&["sync"]);

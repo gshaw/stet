@@ -18,11 +18,12 @@ Every knowledge repo runs Prettier, cspell and markdownlint-cli2, pinned by mise
 .markdownlint-cli2.yaml  generated
 .cspell.yaml             generated down to `words:`; the word list is the repo's
 .mise.toml               generated down to a marker line; the tasks below are the repo's
+hk.pkl                   generated: the pre-commit hook
 .github/workflows/static-analysis.yml   generated, when `ci = true`
 ```
 
-The copies exist because CI can't run stet: the repos are private and so is stet, and
-GitHub's runner has no way to install it. CI runs `mise run ci-static-analysis`, which
+The copies exist because CI can't run stet: the repos are private, stet was too until
+2026-11-17, and it has no release a runner could install. CI runs `mise run ci-static-analysis`, which
 runs the three tools check-only on the committed configs. `stet sync` writes the copies,
 and `stet check` fails with `config-sync` when one differs, so the copies can't drift
 from stet or from `.stet.toml`.
@@ -53,6 +54,26 @@ The house rules read every Markdown file the way markdownlint does, hidden folde
 included, minus `.gitignore`d files, `Inbox/` and the paths `.stet.toml` ignores for
 `rules`. Links resolve with exact case, one folder listing at a time, because the Mac's
 file system ignores case and GitHub doesn't.
+
+## The pre-commit hook
+
+`hk.pkl` gives every knowledge repo a pre-commit hook. hk passes the staged Markdown
+files, and the hook runs `stet check --check-only --files <them>`. The tools and rules
+still read the whole repo; `--files` drops every finding outside the named files. Findings
+with no file (a tool that couldn't run) and `config-sync` always count. So another
+session's untracked note, or a broken file nobody is committing, never blocks a commit,
+and a staged file with an unknown word always does. It takes about 3 seconds.
+
+stet never runs git, so hk picks the files. The hook is check-only and sets
+`stash = "none"`: several agent sessions share one working tree, and stashing would move
+their unstaged edits off disk mid-check. The cost: a file with both staged and unstaged
+edits is checked as it is on disk. A link to a file that isn't committed passes too. Both
+are rare, and the full `stet check` still catches them.
+
+`hk install --mise` turns the hook on per clone; it's git config, not a file in the repo.
+`stet doctor` reads each repo's `.git/config` and `~/.gitconfig` as text and fails a repo
+with no `hk-pre-commit` hook. `--no-verify` and `HK=0` skip it; that's for Gerry, and
+agents are kept from it outside stet.
 
 ## `stet inbox`
 
