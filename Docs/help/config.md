@@ -41,8 +41,9 @@ skips binary files (PDFs, images, office documents).
 
 ## The files in the repo
 
-- `.cspell.yaml`: the repo's words, and only them. stet makes it once and never rewrites
-  it; stet's cspell settings import it, and editors read it as it is. Add words there.
+- `.cspell.yaml`: the repo's words. stet makes it once and never rewrites it; stet's
+  cspell settings import it, and editors read it as it is. Add words there. It may also
+  set `language` (default `en`; a code repo with Canadian UI text uses `en,en-GB`).
 - `.mise.toml`: stet's down to the marker line
   `# ---- Below this line: this repo's own tasks. …`. It pins stet, at the version that
   last ran `stet sync`, and hk. Add the repo's own tasks below it; a task that needs a

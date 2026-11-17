@@ -32,6 +32,11 @@ alone and get a known-good set of linters. Now:
   ignores, in Arniston's `Untracked/`), the old and new `stet check --check-only` gave the
   same findings and the same file counts. Arniston's `index-check` needs `node`, which it
   got from the shared pin; it now declares it on the task.
+- **cspell 10.4.0, and no `language` from stet** (0.1.1, same day). Run on copies of the
+  code repos, 9.1.5 flagged sarduty's CSS data URIs, which 10.4.0 passes. stet's
+  `language: en` also overrode sarduty's `en,en-GB`. 10.4.0 found the same issues as
+  9.1.5 in all six knowledge repos; it only skips 17 binary spreadsheets in Finances.
+  cspell defaults to `en`, so a repo sets another language in its own `.cspell.yaml`.
 
 Looked at and not taken, measured on the same copies:
 

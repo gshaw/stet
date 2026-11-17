@@ -24,7 +24,7 @@ pub const SOURCE: &str = "github:gshaw/stet";
 pub const STET: &str = env!("CARGO_PKG_VERSION");
 
 pub const NODE: &str = "24.4.1";
-pub const CSPELL: &str = "9.1.5";
+pub const CSPELL: &str = "10.4.0";
 pub const PRETTIER: &str = "3.8.3";
 pub const MARKDOWNLINT: &str = "0.22.1";
 pub const HK: &str = "2.3.0";
@@ -327,12 +327,12 @@ pub fn markdownlint_config() -> String {
 
 /// cspell's settings, passed with `-c`. They import the repo's `.cspell.yaml` for its
 /// words. `globRoot` makes the ignore paths start at the repo, where cspell runs, not at
-/// this file in the cache.
+/// this file in the cache. No `language`: cspell's default is `en`, and a repo that wants
+/// another (`en,en-GB`) sets it in its own `.cspell.yaml`, where an editor sees it too.
 pub fn cspell_config(config: &RepoConfig, root: &Path) -> String {
     let mut out = format!(
         "{HEADER}\n\
          version: \"0.2\"\n\
-         language: en\n\
          globRoot: \"${{cwd}}\"\n\
          useGitignore: true\n"
     );
