@@ -192,6 +192,11 @@ fn mise(_config: &RepoConfig, existing: Option<&str>) -> String {
         r#"{HEADER}
 # The repo's own tasks go below the marker line at the end.
 # stet brings its own Prettier, cspell and markdownlint; this repo pins only stet and hk.
+
+# mise's version service (mise-versions.jdx.dev) doesn't list stet, so ask GitHub directly.
+[settings]
+use_versions_host = false
+
 [tools]
 "{SOURCE}" = "{STET}"
 hk = "{HK}"
@@ -404,6 +409,10 @@ mod tests {
         let parsed: toml::Table = toml::from_str(&first).unwrap();
         assert!(parsed["tasks"].get("books").is_some());
         assert_eq!(parsed["tools"][SOURCE].as_str(), Some(STET));
+        assert_eq!(
+            parsed["settings"]["use_versions_host"].as_bool(),
+            Some(false)
+        );
     }
 
     #[test]

@@ -37,6 +37,10 @@ alone and get a known-good set of linters. Now:
   `language: en` also overrode sarduty's `en,en-GB`. 10.4.0 found the same issues as
   9.1.5 in all six knowledge repos; it only skips 17 binary spreadsheets in Finances.
   cspell defaults to `en`, so a repo sets another language in its own `.cspell.yaml`.
+- **`use_versions_host = false` in each repo's `.mise.toml`** (0.1.2). mise looks up a
+  `github:` release through its version service first, and that service 404s for
+  gshaw/stet (it has hk), so a plain install failed. Asking GitHub directly works; CI
+  passes mise-action's token, so rate limits don't bite.
 
 Looked at and not taken, measured on the same copies:
 
