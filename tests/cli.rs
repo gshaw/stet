@@ -437,7 +437,8 @@ fn a_code_repo_keeps_its_mise_and_ci_and_pins_by_hand() {
         .filter(|f| f["file"] == "mise.toml")
         .map(|f| f["message"].as_str().unwrap().to_string())
         .collect();
-    assert_eq!(pins.len(), 2, "{pins:?}");
+    assert_eq!(pins.len(), 3, "{pins:?}");
+    assert!(pins[2].contains("use_versions_host"), "{pins:?}");
     assert!(
         pins[0].starts_with("doesn't pin it; pin `\"github:gshaw/stet\""),
         "{pins:?}"
@@ -448,7 +449,7 @@ fn a_code_repo_keeps_its_mise_and_ci_and_pins_by_hand() {
     home.write(
         "home/Repo/mise.toml",
         &format!(
-            "[tools]\n\"github:gshaw/stet\" = \"{version}\"\nhk = {{ version = \"{}\" }}\n",
+            "[settings]\nuse_versions_host = false\n\n[tools]\n\"github:gshaw/stet\" = \"{version}\"\nhk = {{ version = \"{}\" }}\n",
             stet::generate::HK
         ),
     );

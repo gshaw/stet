@@ -97,7 +97,8 @@ own its hook, and nothing else. The repo keeps its `mise.toml` (stet writes no
 `.mise.toml`) and its CI (no workflow unless `ci = true`), and runs
 `stet check --check-only` in that CI itself. Because stet doesn't write its mise config,
 `stet check` reports a `config-sync` error when it doesn't pin `"github:gshaw/stet"` and
-hk at this stet's versions. cspell reads every file the repo doesn't ignore, code too,
+hk at this stet's versions, or doesn't set `use_versions_host = false` (mise's version
+service doesn't list stet, so the pin wouldn't install). cspell reads every file the repo doesn't ignore, code too,
 with the repo's `.cspell.yaml` imported; a cspell config under another name
 (`.cspell.yml`, `cspell.config.yaml`, …) is a `config-sync` error, because stet would
 skip its words.

@@ -58,9 +58,9 @@ skips binary files (PDFs, images, office documents).
   runs `stet check --check-only`.
 
 A code repo (`kind = "code"`) gets only `.cspell.yaml` and `hk.pkl`. It pins
-`"github:gshaw/stet"` and hk in its own `mise.toml` (`stet check` says when they're
-behind) and runs `stet check --check-only` in its own CI. Its cspell settings and words
-go in `.cspell.yaml`; a config under another name is an error. Frontmatter is allowed in
+`"github:gshaw/stet"` and hk in its own `mise.toml`, with `use_versions_host = false`
+under `[settings]` (`stet check` says when any of it is missing or behind), and runs
+`stet check --check-only` in its own CI. Its cspell settings and words go in `.cspell.yaml`; a config under another name is an error. Frontmatter is allowed in
 `.github/` in every repo, for GitHub's issue templates.
 
 Prettier, cspell and markdownlint keep no config in the repo. An older stet wrote

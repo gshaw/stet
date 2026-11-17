@@ -55,13 +55,14 @@ pub fn other_cspell(repo: &Repo) -> Vec<&'static str> {
         .collect()
 }
 
-/// A code repo pins stet and hk in its own mise config. The pins that are missing or
-/// behind, as (file, message).
+/// A code repo pins stet and hk in its own mise config, and turns off mise's version
+/// service, which doesn't list stet. What's missing or behind, as (file, message).
 pub fn pins(repo: &Repo) -> Vec<(String, String)> {
     if repo.config.kind != Kind::Code {
         return vec![];
     }
     let mut found: Vec<(&str, Option<String>, Option<String>)> = vec![];
+    let mut host_off = false;
     for file in ["mise.toml", ".mise.toml"] {
         let Ok(text) = std::fs::read_to_string(repo.root.join(file)) else {
             continue;
@@ -69,6 +70,11 @@ pub fn pins(repo: &Repo) -> Vec<(String, String)> {
         let Ok(table) = toml::from_str::<toml::Table>(&text) else {
             continue;
         };
+        host_off |= table
+            .get("settings")
+            .and_then(|s| s.get("use_versions_host"))
+            .and_then(|v| v.as_bool())
+            == Some(false);
         let tools = table.get("tools").and_then(|t| t.as_table());
         let version = |name: &str| {
             let v = tools?.get(name)?;
@@ -96,6 +102,14 @@ pub fn pins(repo: &Repo) -> Vec<(String, String)> {
                 format!("{now}; pin `\"{name}\" = \"{want}\"` under [tools]"),
             ));
         }
+    }
+    if !host_off {
+        out.push((
+            file,
+            "set `use_versions_host = false` under [settings]: mise's version service \
+             doesn't list stet, so the pin can't install"
+                .into(),
+        ));
     }
     out
 }
