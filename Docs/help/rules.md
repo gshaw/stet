@@ -15,7 +15,8 @@ repo's `.stet.toml` ignores for `rules`.
 - **`link`**: a relative link or image whose file doesn't exist, or exists with a
   different case. The Mac doesn't care about case and GitHub does, so `Notes.md` for
   `notes.md` works in iA Writer and breaks on GitHub. A link into a sibling repo
-  (`../Arniston/`) only has to exist.
+  (`../Arniston/`) only has to exist, and is skipped in CI (`CI` set), where the sibling
+  isn't checked out.
 - **`anchor`**: a link's `#anchor` names no heading in its target. Anchors are GitHub's:
   lowercase, punctuation dropped, spaces to hyphens, `-1` and `-2` for repeats.
 - **`superseded-date`**: a block that starts "Superseded" (after any ✅, ❌, ⚠️, `>` or

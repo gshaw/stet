@@ -260,6 +260,7 @@ fn check_command(env: &Env, args: CheckArgs) -> Result<u8> {
         write: !args.check_only,
         tools: !args.rules_only,
         only: None,
+        siblings: env.get("CI").is_none(),
     };
     let repos = repos(env, &args.repos)?;
     if !args.files.is_empty() {
