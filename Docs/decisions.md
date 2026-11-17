@@ -20,7 +20,13 @@ failing commits on 2026-11-17, and Gerry wants the same hooks everywhere.
 - **cspell had never read stet's code.** About 30 words went into `.cspell.yaml`; regex
   fragments and test strings with deliberate typos get an inline `cspell:ignore`.
 - **CI** (`static-analysis.yml`) runs `cargo fmt --check`, clippy, `cargo test` and
-  `stet check --check-only` on every PR and push to main.
+  `stet check --check-only` on every PR and push to main. Without it, the
+  `no-early-merges` guard let stet PRs through 10 minutes after the push, on the
+  assumption that a repo with no checks has no CI.
+- **CI also builds the musl release target** (`release-build`), so a broken
+  cross-compile shows up on the PR, not on the tag. Linux only: the repo is public, so
+  minutes are free, and `mise run publish` already builds the Mac target. A new push to
+  a PR cancels its older run.
 
 ## 2026-11-17 · The same hooks in every repo, and code repos
 
