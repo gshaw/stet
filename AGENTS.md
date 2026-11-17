@@ -47,4 +47,5 @@ there, dated, newest first. The idea's history before the repo is in Workshop at
 - Library code takes an `Env`, never the process environment, so every test controls it.
 - Human output is short and plain. `--json` output is stable and complete.
 - Run `mise run publish` before calling a change done: it checks, tests, builds, signs
-  and installs to `~/.local/bin/stet`. hk runs rustfmt and clippy on every commit.
+  and installs to `~/.local/bin/stet`. Run `mise run check` before committing: hk runs
+  the released stet, rustfmt and clippy on every commit. New words go in `.cspell.yaml`.

@@ -49,9 +49,10 @@ skips binary files (PDFs, images, office documents).
   `# ---- Below this line: this repo's own tasks. …`. It pins stet, at the version that
   last ran `stet sync`, and hk. Add the repo's own tasks below it; a task that needs a
   tool names it with `tools = { node = "24" }`.
-- `hk.pkl`: stet's down to the marker line `// ---- Below this line: this repo's own
-  steps. …`. The pre-commit hook, check-only with no stash: `stet check --check-only
-  --files` on the staged files, then the repo's own steps, set below the marker as
+- `hk.pkl`: stet's down to the marker line
+  `// ---- Below this line: this repo's own steps. …`. The pre-commit hook, check-only
+  with no stash: `stet check --check-only --files` on the staged files, then the repo's
+  own steps, set below the marker as
   `local repo_steps = new Mapping<String, Step> { … }`. hk's global hook runs it; turn
   that on once per Mac with `hk install --global --mise`.
 - `.github/workflows/static-analysis.yml` when `ci` is true: installs stet with mise and

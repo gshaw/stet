@@ -38,6 +38,7 @@ pub struct Request<'a> {
 static SECRETS: LazyLock<Vec<(&str, Regex)>> = LazyLock::new(|| {
     [
         ("a private key", r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+        // cspell:ignore AKIA pousr bxox abposr
         ("an AWS key", r"\bAKIA[0-9A-Z]{16}\b"),
         ("a GitHub token", r"\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,})"),
         ("a Slack token", r"\bxox[abposr]-[A-Za-z0-9-]{10,}"),
@@ -362,6 +363,7 @@ mod tests {
     fn scans_for_secrets() {
         assert!(scan("Use the API normally.\nNo secrets here: 2026-10-04.\n").is_empty());
         assert!(scan("the only secret: `SOPS_AGE_KEY`. It starts\n").is_empty());
+        // cspell:ignore AKIAABCDEFGHIJKLMNOP
         let text = "key AKIAABCDEFGHIJKLMNOP\npassword: hunter22\nCard 4111 1111 1111 1111\n\
                     ⚠️ publish-review: garage codes\naccount # 12345678\n";
         let reasons = scan(text);

@@ -5,6 +5,23 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-11-17 · stet checks itself
+
+stet is now a `kind = "code"` repo like the others: hooks through hk with stet's
+generated `hk.pkl`, check-only, from the global install in dotfiles
+([hk.md](https://github.com/gshaw/Workshop/blob/main/Tooling/hk.md)). stet owns its
+Markdown and spelling; rustfmt and clippy are the repo's own steps. Why: an agent pushed
+failing commits on 2026-11-17, and Gerry wants the same hooks everywhere.
+
+- **The hook runs the released stet** (`"github:gshaw/stet" = "0.2.0"` in `mise.toml`),
+  not the working copy, so a broken build can't block its own fix.
+- **`tests/fixtures/` and `tests/snapshots/` are ignored:** the fixtures are broken on
+  purpose, the snapshots are generated.
+- **cspell had never read stet's code.** About 30 words went into `.cspell.yaml`; regex
+  fragments and test strings with deliberate typos get an inline `cspell:ignore`.
+- **CI** (`static-analysis.yml`) runs `cargo fmt --check`, clippy, `cargo test` and
+  `stet check --check-only` on every PR and push to main.
+
 ## 2026-11-17 · The same hooks in every repo, and code repos
 
 Gerry's goal: consistent hooks on everything, knowledge repos and code repos (am, stet,

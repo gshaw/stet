@@ -1,0 +1,15 @@
+kind = "code"
+
+[[ignore]]
+paths = ["tests/fixtures/"]
+reason = """
+Fixture repos for the tests: deliberate errors, their own .stet.toml files and fake
+tools. They must stay broken."""
+
+[[ignore]]
+paths = ["tests/snapshots/"]
+reason = "insta's JSON snapshots, written by the tests."
+
+[[ignore]]
+paths = ["target/"]
+reason = "cargo's build output."

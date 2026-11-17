@@ -17,17 +17,20 @@ same commit.
 
 ## Exit codes
 
-| Code | Meaning                                                                       |
-| ---- | ----------------------------------------------------------------------------- |
-| 0    | Success. For `check`, no errors (warnings don't count).                       |
-| 1    | Failure: `check` found an error, or a command couldn't do its job.            |
-| 64   | Usage error: an unknown command or flag, or a missing argument.               |
+| Code | Meaning                                                            |
+| ---- | ------------------------------------------------------------------ |
+| 0    | Success. For `check`, no errors (warnings don't count).            |
+| 1    | Failure: `check` found an error, or a command couldn't do its job. |
+| 64   | Usage error: an unknown command or flag, or a missing argument.    |
 
 When a command fails before it can build its document and `--json` was given, it prints an
 error document instead, on stdout:
 
 ```json
-{ "schema": 1, "error": "no .stet.toml in /Users/gerry/Desktop or any folder above it" }
+{
+  "schema": 1,
+  "error": "no .stet.toml in /Users/gerry/Desktop or any folder above it"
+}
 ```
 
 ## Choosing repos
@@ -126,14 +129,30 @@ into the repo. Exit 0.
   "schema": 1,
   "ok": true,
   "checks": [
-    { "id": "config", "status": "ok", "message": "~/.config/stet/config.toml: 5 repos" },
+    {
+      "id": "config",
+      "status": "ok",
+      "message": "~/.config/stet/config.toml: 5 repos"
+    },
     { "id": "mise", "status": "ok", "message": "/Users/gerry/.local/bin/mise" },
     { "id": "node", "status": "ok", "message": "v24.4.1" },
     { "id": "prettier", "status": "ok", "message": "3.8.3" },
     { "id": "cspell", "status": "ok", "message": "9.1.5" },
-    { "id": "markdownlint-cli2", "status": "ok", "message": "v0.22.1 (markdownlint v0.40.0)" },
-    { "id": "repo:Workshop", "status": "ok", "message": "~/Documents/Workshop: configs in sync" },
-    { "id": "publish", "status": "ok", "message": "articles go to ~/Developer/gshaw.ca/content/articles" }
+    {
+      "id": "markdownlint-cli2",
+      "status": "ok",
+      "message": "v0.22.1 (markdownlint v0.40.0)"
+    },
+    {
+      "id": "repo:Workshop",
+      "status": "ok",
+      "message": "~/Documents/Workshop: configs in sync"
+    },
+    {
+      "id": "publish",
+      "status": "ok",
+      "message": "articles go to ~/Developer/gshaw.ca/content/articles"
+    }
   ]
 }
 ```
@@ -201,8 +220,19 @@ Exit 0 whatever is waiting.
   "schema": 1,
   "path": "/Users/gerry/Documents/Music",
   "name": "Music",
-  "created": [".cspell.yaml", ".git/", ".gitignore", "AGENTS.md", "CLAUDE.md", "Inbox/", "README.md"],
-  "next": ["Fill in the ❌ lines in README.md and AGENTS.md.", "Create the private repo on GitHub and add it as origin."]
+  "created": [
+    ".cspell.yaml",
+    ".git/",
+    ".gitignore",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "Inbox/",
+    "README.md"
+  ],
+  "next": [
+    "Fill in the ❌ lines in README.md and AGENTS.md.",
+    "Create the private repo on GitHub and add it as origin."
+  ]
 }
 ```
 
@@ -223,7 +253,9 @@ Hugo draft, and prints:
   "target": "/Users/gerry/Developer/gshaw.ca/content/articles/web-app-recovery.md",
   "title": "Web app backup and recovery",
   "slug": "web-app-recovery",
-  "links": [{ "line": 136, "url": "../Tooling/healthchecks.md", "action": "unlinked" }]
+  "links": [
+    { "line": 136, "url": "../Tooling/healthchecks.md", "action": "unlinked" }
+  ]
 }
 ```
 

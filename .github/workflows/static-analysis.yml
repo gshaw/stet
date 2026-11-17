@@ -1,0 +1,17 @@
+# Every PR and push to main: the checks the pre-commit hook runs, on the whole repo, plus
+# the tests. The released stet checks the docs and spelling, not this working copy.
+name: Static analysis
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets --quiet -- -D warnings
+      - run: cargo test
+      - run: stet check --check-only
