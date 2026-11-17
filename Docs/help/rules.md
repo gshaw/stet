@@ -6,8 +6,8 @@ repo's `.stet.toml` ignores for `rules`.
 
 ## Errors: `stet check` exits 1
 
-- **`config-sync`**: a generated config differs from what `.stet.toml` makes. Run
-  `stet sync` and commit the result.
+- **`config-sync`**: a generated file differs from what `.stet.toml` makes, or a tool
+  config an older stet generated is still there. Run `stet sync` and commit the result.
 - **`frontmatter`**: a Markdown file starts with a YAML frontmatter block outside the
   allowed paths. These repos are plain Markdown. `AgentSkills/` and `.claude/` are
   allowed everywhere, since skills need frontmatter; a repo adds more under

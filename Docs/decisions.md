@@ -5,6 +5,49 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-11-17 · stet owns the tools; repos pin only stet
+
+Every repo pinned Node, Prettier, cspell and markdownlint-cli2 and carried their configs,
+because CI couldn't install stet. Gerry wants a repo, knowledge or code, to depend on stet
+alone and get a known-good set of linters. Now:
+
+- **stet is released on GitHub** for macOS arm64 and Linux x64 (`.github/workflows/release.yml`,
+  on a `v*` tag). Repos pin `"github:gshaw/stet" = "<version>"` and hk in `.mise.toml`; CI
+  runs `stet check --check-only` like anywhere else.
+- **stet pins the tools, mise installs them.** `mise exec node@… npm:prettier@… -- prettier`
+  at the versions in `generate.rs`, whatever the repo pins. mise keeps one copy per version
+  in its shared install folder, so twenty repos on one stet share one set. Upgrading a
+  linter is a stet release, and each repo moves when its pin does.
+- **The tool configs left the repos.** stet writes them to its cache on every run and
+  passes them (`-c`, `--config`); Prettier's settings and every ignore go on the command
+  line. `stet sync` removes the old generated copies, only ones that start with stet's
+  header.
+- **`.cspell.yaml` stays, and is the repo's.** It holds only the words. stet's cspell
+  config imports it, and VS Code's spell checker reads it directly, so "add to workspace
+  dictionary" lands in the one file stet uses. No copy to keep in sync. The editor doesn't
+  see stet's ignores or its markdownlint rules; Gerry rarely uses VS Code and chose a
+  simpler repo over a matching editor.
+- **Same output, measured.** On copies of all six repos with planted errors (in notes, in
+  `Inbox/` at the root and deeper, in `.build/`, in the journal and Goodreads paths Life
+  ignores, in Arniston's `Untracked/`), the old and new `stet check --check-only` gave the
+  same findings and the same file counts. Arniston's `index-check` needs `node`, which it
+  got from the shared pin; it now declares it on the task.
+
+Looked at and not taken, measured on the same copies:
+
+- **dprint's Markdown plugin** for Prettier: it changed 60 files. It turned
+  `~30% withheld (~$20K)` into strikethrough, joined link text written across lines (breaks
+  `proseWrap: preserve`), and realigned 660 table rows by measuring emoji differently.
+- **rumdl** for markdownlint and Prettier: it matched markdownlint's findings (plus one rule
+  of its own, MD076, to turn off) and, with styles set, made no changes to any repo. A good
+  later swap inside stet, invisible to the repos. Not now: one change at a time.
+- **typos** for cspell: it knows a list of common misspellings, so it caught 10 of 22
+  realistic typos where cspell caught 22, and flagged about 100 false positives in
+  Workshop. A dictionary-only checker without cspell's software and names dictionaries
+  would add 247 words to Workshop's list. cspell stays.
+- **One bundled binary** (`bun build --compile` of all three): 90 MB, and only markdownlint
+  ran outside `node_modules`. Prettier and cspell load files at run time.
+
 ## 2026-11-17 · public, and a pre-commit hook through hk
 
 - **stet is public.** Its history was scanned first: no secrets (one fake AWS key in a

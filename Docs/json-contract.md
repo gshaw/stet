@@ -107,15 +107,17 @@ repo in `~/.config/stet/config.toml`.
       "name": "Life",
       "path": "/Users/gerry/Documents/Life",
       "files": [
-        { "path": ".prettierrc.yaml", "action": "unchanged" },
-        { "path": ".markdownlint-cli2.yaml", "action": "written" }
+        { "path": ".mise.toml", "action": "written" },
+        { "path": "hk.pkl", "action": "unchanged" },
+        { "path": ".prettierrc.yaml", "action": "removed" }
       ]
     }
   ]
 }
 ```
 
-`action` is `written` or `unchanged`. Exit 0.
+`action` is `written`, `unchanged`, or `removed` for a tool config an older stet generated
+into the repo. Exit 0.
 
 ## `stet doctor --json`
 
@@ -138,8 +140,8 @@ repo in `~/.config/stet/config.toml`.
 
 - `status`: `ok`, `warning` or `error`. `ok` is false, and the exit code 1, when any check
   is an error. A missing config file or `[publish]` is only a warning.
-- The tool versions come from running each one through `mise exec` in the first repo that
-  exists, so they're the versions that repo pins.
+- The tool versions come from running each one through `mise exec` at the versions stet
+  pins.
 - One `repo:<name>` check per configured repo: the folder exists, `.stet.toml` reads, and
   the generated configs match it.
 

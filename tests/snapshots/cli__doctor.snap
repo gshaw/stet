@@ -36,7 +36,7 @@ expression: value
     },
     {
       "id": "repo:Repo",
-      "message": "~/Repo: .prettierrc.yaml differs from .stet.toml; run `stet sync`",
+      "message": "~/Repo: hk.pkl differs from .stet.toml; run `stet sync`",
       "status": "error"
     },
     {

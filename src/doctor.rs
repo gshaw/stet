@@ -42,7 +42,7 @@ pub fn doctor(global: &Global, tools: &Tools) -> DoctorReport {
         ),
     }
 
-    // The tools run in a repo, with its pinned versions; any repo will do to see they run.
+    // The tools run at stet's own versions in any folder; a repo will do to see they run.
     let probe = global
         .repos
         .iter()
@@ -76,7 +76,8 @@ pub fn doctor(global: &Global, tools: &Tools) -> DoctorReport {
         }
         match Repo::load(path) {
             Ok(repo) => {
-                let drifted = sync::drifted(&repo);
+                let mut drifted = sync::drifted(&repo);
+                drifted.extend(sync::leftover(&repo));
                 if drifted.is_empty() {
                     add(&id, CheckStatus::Ok, format!("{shown}: configs in sync"));
                 } else {

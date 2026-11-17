@@ -10,13 +10,20 @@ stet is one of the three Bunter tools, beside [rota](https://github.com/gshaw/ro
 
 ## Install
 
-```sh
-mise run publish
+A repo pins stet in `.mise.toml`, and mise installs it from the GitHub releases:
+
+```toml
+[tools]
+"github:gshaw/stet" = "0.1.0"
 ```
 
-That checks, tests, builds, signs and installs `~/.local/bin/stet`. It signs with the
-certificate in `ROTA_SIGN_IDENTITY`, rota's, set once per Mac with `mise set -g`;
-without it, stet installs unsigned with a warning.
+stet brings its own Prettier, cspell and markdownlint-cli2: it runs them through
+`mise exec` at the versions it pins, so mise installs each once for every repo. A repo
+pins nothing else for its Markdown.
+
+For Gerry's own build, `mise run publish` checks, tests, builds, signs and installs
+`~/.local/bin/stet`. It signs with the certificate in `ROTA_SIGN_IDENTITY`, rota's, set
+once per Mac with `mise set -g`; without it, stet installs unsigned with a warning.
 
 ## Checking a repo
 
@@ -27,7 +34,7 @@ stet check --check-only   # change nothing, as CI does
 stet check --warnings     # list the warnings too, not just the count
 stet check --all          # every repo in ~/.config/stet/config.toml
 stet check --check-only --files a.md b.md   # only findings in these, as the hook does
-stet sync                 # rewrite the tool configs from .stet.toml
+stet sync                 # rewrite .mise.toml, hk.pkl and CI from .stet.toml
 stet doctor               # mise, Node and the tools run; every repo is in sync
 ```
 
@@ -90,6 +97,7 @@ prints the new file's path and never commits, pushes or deploys: Gerry reads it 
 ## Developing
 
 `mise run test`, `mise run lint`, `mise run fmt`, and `mise run snapshots` to review changed
-snapshots. hk runs rustfmt and clippy before every commit. `mise run publish` is the whole
-release: no tags, no releases. Agents working on this repo start with
+snapshots. hk runs rustfmt and clippy before every commit. To release, bump `version` in
+`Cargo.toml`, merge, and push a matching tag (`v0.2.0`): the release workflow builds the
+Mac and Linux binaries and attaches them to a GitHub release. Agents working on this repo start with
 [AGENTS.md](AGENTS.md).

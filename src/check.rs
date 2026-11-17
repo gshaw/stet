@@ -63,14 +63,27 @@ pub fn check(repo: &Repo, tools: &Tools, options: &Options) -> RepoCheck {
             severity: Severity::Error,
             message: "differs from what .stet.toml generates; run `stet sync`".into(),
         })
+        .chain(sync::leftover(repo).into_iter().map(|path| {
+            Finding {
+                file: Some(path.into()),
+                line: None,
+                column: None,
+                tool: "stet".into(),
+                rule: "config-sync".into(),
+                severity: Severity::Error,
+                message: "left by an older stet, which kept tool configs in the repo; \
+                      run `stet sync` to remove it"
+                    .into(),
+            }
+        }))
         .collect();
     let mut runs = vec![];
     let mut formatted = vec![];
     if options.tools {
         let mut outcomes = vec![
-            tools.prettier(&repo.root, options.write),
-            tools.cspell(&repo.root),
-            tools.markdownlint(&repo.root),
+            tools.prettier(repo, options.write),
+            tools.cspell(repo),
+            tools.markdownlint(repo),
         ];
         for task in &repo.config.mise.check_tasks {
             outcomes.push(tools.task(&repo.root, task));
