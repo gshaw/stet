@@ -79,6 +79,24 @@ pub fn check(repo: &Repo, tools: &Tools, options: &Options) -> RepoCheck {
                     .into(),
             }
         }))
+        .chain(sync::other_cspell(repo).into_iter().map(|path| Finding {
+            file: Some(path.into()),
+            line: None,
+            column: None,
+            tool: "stet".into(),
+            rule: "config-sync".into(),
+            severity: Severity::Error,
+            message: "stet reads only .cspell.yaml; move its settings and words there".into(),
+        }))
+        .chain(sync::pins(repo).into_iter().map(|(file, message)| Finding {
+            file: Some(file),
+            line: None,
+            column: None,
+            tool: "stet".into(),
+            rule: "config-sync".into(),
+            severity: Severity::Error,
+            message,
+        }))
         .collect();
     let mut runs = vec![];
     let mut formatted = vec![];

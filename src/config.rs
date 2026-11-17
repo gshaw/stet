@@ -139,6 +139,10 @@ pub fn expand(path: &str, home: &Path) -> PathBuf {
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RepoConfig {
+    /// A knowledge repo (`notes`, the default) or a code repo (`code`). A code repo keeps
+    /// its own `mise.toml` and CI, and gets only the hook and the Markdown checks.
+    #[serde(default)]
+    pub kind: Kind,
     /// Paths the tools skip, with the reason. Shared ignores (Inbox/, node_modules) come
     /// on top.
     #[serde(default)]
@@ -149,9 +153,8 @@ pub struct RepoConfig {
     pub cspell: Cspell,
     #[serde(default)]
     pub mise: Mise,
-    /// Write `.github/workflows/static-analysis.yml`.
-    #[serde(default = "yes")]
-    pub ci: bool,
+    /// Write `.github/workflows/static-analysis.yml`. Default: yes for notes, no for code.
+    ci: Option<bool>,
     /// Whether `stet publish` may copy notes from this repo to a public site.
     #[serde(default = "yes")]
     pub publish: bool,
@@ -162,6 +165,21 @@ pub struct RepoConfig {
 
 fn yes() -> bool {
     true
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Kind {
+    #[default]
+    Notes,
+    Code,
+}
+
+impl RepoConfig {
+    /// Whether stet writes the CI workflow. A code repo runs `stet check` in its own.
+    pub fn ci(&self) -> bool {
+        self.ci.unwrap_or(self.kind == Kind::Notes)
+    }
 }
 
 #[derive(Debug, Clone, Deserialize)]

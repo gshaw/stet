@@ -71,7 +71,7 @@ pub fn doctor(global: &Global, tools: &Tools) -> DoctorReport {
             add(
                 &format!("hook:{name}"),
                 CheckStatus::Error,
-                format!("{shown}: no pre-commit hook; run `hk install --mise` there"),
+                format!("{shown}: no pre-commit hook; run `hk install --global --mise` once"),
             );
         }
         match Repo::load(path) {

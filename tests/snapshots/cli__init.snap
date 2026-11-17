@@ -22,7 +22,6 @@ expression: value
     "Create the private repo on GitHub and add it as origin.",
     "Add the repo to ~/.config/stet/config.toml.",
     "`mise trust && mise install`, then `mise run check` until clean.",
-    "`hk install --mise` to turn on the pre-commit check.",
     "Import the first content as its first domain, commit to main and push."
   ],
   "path": "[ROOT]/home/Music",

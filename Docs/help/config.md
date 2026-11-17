@@ -7,7 +7,8 @@ keeps, and `stet check` fails when one differs.
 
 ```toml
 # Top-level keys come before any [table].
-ci = true        # write .github/workflows/static-analysis.yml (default true)
+kind = "notes"   # or "code": a code repo keeps its own mise.toml and CI (default notes)
+ci = true        # write .github/workflows/static-analysis.yml (default: true for notes)
 publish = true   # `stet publish` may copy notes from this repo (default true)
 never_publish = ["HomeAutomation/"]   # paths publish refuses even so
 
@@ -48,10 +49,20 @@ skips binary files (PDFs, images, office documents).
   `# ---- Below this line: this repo's own tasks. …`. It pins stet, at the version that
   last ran `stet sync`, and hk. Add the repo's own tasks below it; a task that needs a
   tool names it with `tools = { node = "24" }`.
-- `hk.pkl`: all stet's. The pre-commit hook: `stet check --check-only --files` on the
-  staged Markdown files. Turn it on once per clone with `hk install --mise`.
+- `hk.pkl`: stet's down to the marker line `// ---- Below this line: this repo's own
+  steps. …`. The pre-commit hook, check-only with no stash: `stet check --check-only
+  --files` on the staged files, then the repo's own steps, set below the marker as
+  `local repo_steps = new Mapping<String, Step> { … }`. hk's global hook runs it; turn
+  that on once per Mac with `hk install --global --mise`.
 - `.github/workflows/static-analysis.yml` when `ci` is true: installs stet with mise and
   runs `stet check --check-only`.
+
+A code repo (`kind = "code"`) gets only `.cspell.yaml` and `hk.pkl`. It pins
+`"github:gshaw/stet"` and hk in its own `mise.toml`, with `use_versions_host = false`
+under `[settings]` (`stet check` says when any of it is missing or behind), and runs
+`stet check --check-only` in its own CI. Its cspell settings and words go in
+`.cspell.yaml`; a config under another name is an error. Frontmatter is allowed in
+`.github/` in every repo, for GitHub's issue templates.
 
 Prettier, cspell and markdownlint keep no config in the repo. An older stet wrote
 `.prettierrc.yaml`, `.prettierignore` and `.markdownlint-cli2.yaml`; `stet sync` removes
