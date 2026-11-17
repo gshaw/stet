@@ -1,6 +1,9 @@
 //! Runs Prettier, cspell and markdownlint-cli2 in a repo and turns their output into
-//! findings. They run through `mise exec`, so each repo's pinned versions are the ones
-//! used, one after another: Prettier writes files the other two read.
+//! findings. They run through `mise exec` at the versions in `generate.rs`, whatever the
+//! repo pins, so mise installs each version once and every repo shares it. They run one
+//! after another: Prettier writes files the other two read. Their configs are written to
+//! stet's cache (`STET_CACHE_DIR`, else `$XDG_CACHE_HOME/stet` or `~/.cache/stet`) on every
+//! run, never into the repo.
 //!
 //! `STET_PRETTIER`, `STET_CSPELL`, `STET_MARKDOWNLINT` and `STET_MISE` name a program to
 //! run instead, so tests use stand-ins and never need Node.
@@ -11,12 +14,15 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 
+use crate::config::Repo;
 use crate::contract::{Finding, Severity, ToolRun};
 use crate::env::Env;
+use crate::generate::{self, CSPELL, MARKDOWNLINT, NODE, PRETTIER};
 
 pub struct Tools {
     env: Env,
     mise: Option<PathBuf>,
+    cache: PathBuf,
 }
 
 /// What one tool run produced.
@@ -38,23 +44,52 @@ impl Tools {
             Some(path) => Some(PathBuf::from(path)),
             None => find_mise(env),
         };
+        let cache = match (env.get("STET_CACHE_DIR"), env.get("XDG_CACHE_HOME")) {
+            (Some(dir), _) => PathBuf::from(dir),
+            (None, Some(xdg)) => Path::new(xdg).join("stet"),
+            (None, None) => env.home().join(".cache/stet"),
+        };
         Tools {
             env: env.clone(),
             mise,
+            cache,
         }
+    }
+
+    /// Writes one of a repo's tool configs to the cache and returns its path. Each repo has
+    /// its own folder, named for it and a hash of its path. The write goes through a rename,
+    /// so a hook and a full check running at once never read half a file.
+    fn config_file(&self, repo: &Repo, name: &str, text: &str) -> Result<PathBuf, String> {
+        let dir = self.cache.join("repos").join(format!(
+            "{}-{:08x}",
+            repo.name(),
+            fnv(repo.root.display().to_string().as_bytes())
+        ));
+        let path = dir.join(name);
+        let fail = |e: std::io::Error| format!("can't write {}: {e}", path.display());
+        std::fs::create_dir_all(&dir).map_err(fail)?;
+        let tmp = dir.join(format!(".{name}.{}", std::process::id()));
+        std::fs::write(&tmp, text).map_err(fail)?;
+        std::fs::rename(&tmp, &path).map_err(fail)?;
+        Ok(path)
     }
 
     pub fn mise(&self) -> Option<&Path> {
         self.mise.as_deref()
     }
 
-    /// The command for a Node tool: the override if set, else `mise exec -- <name>`.
+    /// The command for a Node tool: the override if set, else
+    /// `mise exec node@… npm:<package>@… -- <name>` at stet's versions.
     fn command(&self, name: &str, override_key: &str) -> Option<Command> {
         let mut command = match self.env.get(override_key) {
             Some(program) => Command::new(program),
             None => {
                 let mut c = Command::new(self.mise.as_ref()?);
-                c.args(["exec", "--", name]);
+                c.arg("exec").arg(format!("node@{NODE}"));
+                if let Some(version) = version_of(name) {
+                    c.arg(format!("npm:{name}@{version}"));
+                }
+                c.args(["--", name]);
                 c
             }
         };
@@ -62,7 +97,13 @@ impl Tools {
         Some(command)
     }
 
-    fn run(&self, name: &str, key: &str, root: &Path, args: &[&str]) -> Result<Output, String> {
+    fn run<S: AsRef<std::ffi::OsStr>>(
+        &self,
+        name: &str,
+        key: &str,
+        root: &Path,
+        args: &[S],
+    ) -> Result<Output, String> {
         let mut command = self
             .command(name, key)
             .ok_or_else(|| format!("can't run {name}: mise isn't installed"))?;
@@ -101,14 +142,15 @@ impl Tools {
     }
 
     /// Prettier on every Markdown file: rewrites them, or only checks when `write` is false.
-    pub fn prettier(&self, root: &Path, write: bool) -> Outcome {
-        let args: &[&str] = if write {
-            &["--write", "--list-different", "**/*.md"]
+    pub fn prettier(&self, repo: &Repo, write: bool) -> Outcome {
+        let mut args: Vec<String> = if write {
+            vec!["--write".into(), "--list-different".into()]
         } else {
-            &["--check", "**/*.md"]
+            vec!["--check".into()]
         };
+        args.extend(generate::prettier_args(&repo.config));
         let mut outcome = Outcome::new("prettier");
-        let out = match self.run("prettier", "STET_PRETTIER", root, args) {
+        let out = match self.run("prettier", "STET_PRETTIER", &repo.root, &args) {
             Ok(out) => out,
             Err(e) => return outcome.failed(e),
         };
@@ -152,14 +194,26 @@ impl Tools {
         outcome.finish()
     }
 
-    pub fn cspell(&self, root: &Path) -> Outcome {
+    pub fn cspell(&self, repo: &Repo) -> Outcome {
         static ISSUE: LazyLock<Regex> =
             LazyLock::new(|| Regex::new(r"^(.+?):(\d+):(\d+) - (.+?)(?: fix: \(.*\))?$").unwrap());
         static COUNT: LazyLock<Regex> =
             LazyLock::new(|| Regex::new(r"Files checked: (\d+)").unwrap());
         let mut outcome = Outcome::new("cspell");
-        let args = ["lint", "--no-progress", "--no-color", "."];
-        let out = match self.run("cspell", "STET_CSPELL", root, &args) {
+        let text = generate::cspell_config(&repo.config, &repo.root);
+        let config = match self.config_file(repo, "cspell.yaml", &text) {
+            Ok(path) => path,
+            Err(e) => return outcome.failed(e),
+        };
+        let args = [
+            "lint".as_ref(),
+            "--no-progress".as_ref(),
+            "--no-color".as_ref(),
+            "-c".as_ref(),
+            config.as_os_str(),
+            ".".as_ref(),
+        ];
+        let out = match self.run::<&std::ffi::OsStr>("cspell", "STET_CSPELL", &repo.root, &args) {
             Ok(out) => out,
             Err(e) => return outcome.failed(e),
         };
@@ -185,14 +239,24 @@ impl Tools {
         outcome.finish()
     }
 
-    pub fn markdownlint(&self, root: &Path) -> Outcome {
+    pub fn markdownlint(&self, repo: &Repo) -> Outcome {
         static ISSUE: LazyLock<Regex> = LazyLock::new(|| {
             Regex::new(r"^(.+?):(\d+)(?::(\d+))? (?:(?:error|warning) )?(MD\d+\S*) (.*)$").unwrap()
         });
         static COUNT: LazyLock<Regex> =
             LazyLock::new(|| Regex::new(r"^Linting: (\d+) file").unwrap());
         let mut outcome = Outcome::new("markdownlint");
-        let out = match self.run("markdownlint-cli2", "STET_MARKDOWNLINT", root, &["**/*.md"]) {
+        let config = match self.config_file(
+            repo,
+            "markdownlint-cli2.yaml",
+            &generate::markdownlint_config(),
+        ) {
+            Ok(path) => path,
+            Err(e) => return outcome.failed(e),
+        };
+        let mut args = vec!["--config".to_string(), config.display().to_string()];
+        args.extend(generate::markdownlint_globs(&repo.config));
+        let out = match self.run("markdownlint-cli2", "STET_MARKDOWNLINT", &repo.root, &args) {
             Ok(out) => out,
             Err(e) => return outcome.failed(e),
         };
@@ -309,6 +373,23 @@ fn tool_failed(tool: &str, code: i32, text: &str) -> Finding {
         "run",
         format!("exited {code}: {tail}"),
     )
+}
+
+/// The npm package version stet pins for a tool; `None` for Node itself.
+fn version_of(name: &str) -> Option<&'static str> {
+    match name {
+        "prettier" => Some(PRETTIER),
+        "cspell" => Some(CSPELL),
+        "markdownlint-cli2" => Some(MARKDOWNLINT),
+        _ => None,
+    }
+}
+
+/// FNV-1a: a hash that stays the same across Rust versions, for cache folder names.
+fn fnv(bytes: &[u8]) -> u32 {
+    bytes.iter().fold(0x811c_9dc5, |h, b| {
+        (h ^ u32::from(*b)).wrapping_mul(0x0100_0193)
+    })
 }
 
 /// mise on PATH, then the usual install places.

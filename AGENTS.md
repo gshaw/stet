@@ -21,9 +21,11 @@ there, dated, newest first. The idea's history before the repo is in Workshop at
 
 ## The engine
 
-- **`src/generate.rs` is the one copy of the shared config.** The knowledge repos carry
-  generated copies because CI can't install stet. Change the config here, then
-  `stet sync --all` and commit each repo.
+- **`src/generate.rs` is the one copy of the shared config.** The tool versions and
+  configs live here and reach the tools through stet's cache, never the repos. A repo
+  keeps only `.mise.toml` (pinning stet), `hk.pkl`, the CI workflow and its own
+  `.cspell.yaml` words. A change here ships in a release; then `stet sync --all` moves
+  each repo's pin, and each repo is committed.
 - **stet never uses git, never commits, never pushes.** `sync` and `init` write files;
   `publish` writes one file into the site repo. `check` changes files only through
   Prettier, and not at all with `--check-only`. The pre-commit hook gets the staged files

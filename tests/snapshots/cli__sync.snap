@@ -8,18 +8,6 @@ expression: value
       "files": [
         {
           "action": "written",
-          "path": ".prettierrc.yaml"
-        },
-        {
-          "action": "written",
-          "path": ".prettierignore"
-        },
-        {
-          "action": "written",
-          "path": ".markdownlint-cli2.yaml"
-        },
-        {
-          "action": "written",
           "path": ".cspell.yaml"
         },
         {

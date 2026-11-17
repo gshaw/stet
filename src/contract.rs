@@ -81,6 +81,8 @@ pub struct CheckReport {
 pub enum SyncAction {
     Written,
     Unchanged,
+    /// A tool config an older stet generated; stet keeps it in its cache now.
+    Removed,
 }
 
 #[derive(Debug, Clone, Serialize)]
