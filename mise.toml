@@ -1,7 +1,7 @@
 [tools]
 rust = { version = "1.98.1", components = "rustfmt,clippy" }
 hk = "2.12.0"
-"github:gshaw/stet" = "0.2.0"
+"github:gshaw/stet" = "0.2.1"
 cargo-insta = "1.48.0"
 
 [settings]
