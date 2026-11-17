@@ -5,6 +5,33 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-11-17 · The same hooks in every repo, and code repos
+
+Gerry's goal: consistent hooks on everything, knowledge repos and code repos (am, stet,
+sarduty, Tides, LandNav; not MarNav; rota is archived).
+
+- **One global hook.** `hk install --global --mise` in dotfiles' `gitconfig` replaces the
+  per-clone installs. Every clone and worktree is covered, and a repo with no `hk.pkl` is
+  a no-op. The local entries were removed from the repos that had them.
+- **Check-only, no stash, everywhere.** The Rust repos' hand-written `hk.pkl` ran hk's
+  defaults: fix and stage, and a git stash that takes untracked files. In a shared
+  checkout that pulls another session's edits off disk. A failed hook costs one
+  `hk fix --all` and a re-stage.
+- **stet writes every `hk.pkl`;** a repo's own steps go below a marker line, like
+  `.mise.toml`'s tasks. One Pkl file, so `hk check` and `hk fix` see every step. Tested
+  on hk 2.12.0: a `local` property after the `steps` block that spreads it is valid.
+- **The stet step takes every staged file,** not just Markdown: cspell reads code too.
+- **`kind = "code"`.** stet checks a code repo's Markdown and spelling, and writes only
+  `.cspell.yaml` and `hk.pkl`. The repo's `mise.toml` and CI are its own, so stet can't
+  move the pins; `stet check` reports them when they're behind. Measured on copies of
+  Tides, LandNav, sarduty, am and stet: 1 to 4 seconds a run, findings real (unformatted
+  docs, an issue template's frontmatter, now allowed in `.github/`). am and stet never
+  ran cspell and need word lists.
+- **Tests stay in CI.** Builds, `mix compile --force` and test suites never go in
+  pre-commit.
+- **Agents can't skip the hook.** `no-hook-skips` in dotfiles is a PreToolUse hook for
+  Claude Code and Codex.
+
 ## 2026-11-17 · stet owns the tools; repos pin only stet
 
 Every repo pinned Node, Prettier, cspell and markdownlint-cli2 and carried their configs,

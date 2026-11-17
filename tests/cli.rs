@@ -381,6 +381,86 @@ fn check_files_keeps_only_their_findings() {
 }
 
 #[test]
+fn sync_keeps_the_repo_hk_steps() {
+    let home = Home::new();
+    home.stet(&["sync"]);
+    let hk = std::fs::read_to_string(home.repo().join("hk.pkl")).unwrap();
+    assert!(hk.contains("fix = false\n    stash = \"none\""), "{hk}");
+    assert!(
+        hk.ends_with("local repo_steps = new Mapping<String, Step> {}\n"),
+        "{hk}"
+    );
+    let ours =
+        "local repo_steps = new Mapping<String, Step> {\n  [\"fmt\"] = Builtins.cargo_fmt\n}\n";
+    let edited = hk.replace("local repo_steps = new Mapping<String, Step> {}\n", ours);
+    std::fs::write(home.repo().join("hk.pkl"), &edited).unwrap();
+    let out = home.stet(&["sync", "--json"]).json();
+    assert!(
+        out["repos"][0]["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|f| f["action"] == "unchanged"),
+        "{out}"
+    );
+    let report = home.stet(&["check", "--rules-only", "--json"]).json();
+    assert!(!rules(&report).iter().any(|r| r.starts_with("config-sync")));
+}
+
+#[test]
+fn a_code_repo_keeps_its_mise_and_ci_and_pins_by_hand() {
+    let home = Home::new();
+    let config = std::fs::read_to_string(home.repo().join(".stet.toml")).unwrap();
+    home.write(
+        "home/Repo/.stet.toml",
+        &format!("kind = \"code\"\n{config}"),
+    );
+    home.write("home/Repo/.cspell.yml", "words: []\n");
+    home.write(
+        "home/Repo/mise.toml",
+        "[tools]\nhk = \"1.0.0\"\n\n[tasks.extra-check]\nrun = \"true\"\n",
+    );
+    home.stet(&["sync"]);
+    assert!(!home.repo().join(".mise.toml").exists());
+    assert!(!home.repo().join(".github").exists());
+    assert!(home.repo().join("hk.pkl").exists());
+    let report = home.stet(&["check", "--rules-only", "--json"]).json();
+    let found = rules(&report);
+    assert!(
+        found.contains(&"config-sync .cspell.yml: error".to_string()),
+        "{found:?}"
+    );
+    let pins: Vec<_> = report["repos"][0]["findings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|f| f["file"] == "mise.toml")
+        .map(|f| f["message"].as_str().unwrap().to_string())
+        .collect();
+    assert_eq!(pins.len(), 2, "{pins:?}");
+    assert!(
+        pins[0].starts_with("doesn't pin it; pin `\"github:gshaw/stet\""),
+        "{pins:?}"
+    );
+    assert!(pins[1].starts_with("pins 1.0.0;"), "{pins:?}");
+
+    let version = env!("CARGO_PKG_VERSION");
+    home.write(
+        "home/Repo/mise.toml",
+        &format!(
+            "[tools]\n\"github:gshaw/stet\" = \"{version}\"\nhk = {{ version = \"{}\" }}\n",
+            stet::generate::HK
+        ),
+    );
+    std::fs::remove_file(home.repo().join(".cspell.yml")).unwrap();
+    let report = home.stet(&["check", "--rules-only", "--json"]).json();
+    assert!(
+        !rules(&report).iter().any(|r| r.starts_with("config-sync")),
+        "{report}"
+    );
+}
+
+#[test]
 fn check_fails_when_a_config_drifts() {
     let home = Home::new();
     home.stet(&["sync"]);

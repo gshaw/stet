@@ -45,13 +45,14 @@ in [Docs/design.md](Docs/design.md), and why in [Docs/decisions.md](Docs/decisio
 
 ## The pre-commit hook
 
-Every knowledge repo has a generated `hk.pkl`: before each commit,
-[hk](https://hk.jdx.dev) runs `stet check --check-only --files` on the staged Markdown
-files. Another session's untracked note can't block a commit; an unknown word in a staged
-file always does. Turn it on once per clone:
+Every repo stet looks after, knowledge or code, has a generated `hk.pkl`: before each
+commit, [hk](https://hk.jdx.dev) runs `stet check --check-only --files` on the staged
+files, check-only and without a stash. Another session's untracked note can't block a
+commit; an unknown word in a staged file always does. A code repo adds its own steps
+(rustfmt, SwiftLint) below the marker line at the end. Turn hk on once per Mac:
 
 ```sh
-hk install --mise
+hk install --global --mise
 ```
 
 `stet doctor` fails a repo without it.

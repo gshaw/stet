@@ -77,7 +77,6 @@ pub fn init(env: &Env, dir: &Path, name: Option<&str>) -> Result<InitReport> {
         "Create the private repo on GitHub and add it as origin.".to_string(),
         "Add the repo to ~/.config/stet/config.toml.".to_string(),
         "`mise trust && mise install`, then `mise run check` until clean.".to_string(),
-        "`hk install --mise` to turn on the pre-commit check.".to_string(),
         "Import the first content as its first domain, commit to main and push.".to_string(),
     ];
     Ok(InitReport {

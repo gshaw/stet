@@ -62,8 +62,8 @@ file system ignores case and GitHub doesn't.
 
 ## The pre-commit hook
 
-`hk.pkl` gives every knowledge repo a pre-commit hook. hk passes the staged Markdown
-files, and the hook runs `stet check --check-only --files <them>`. The tools and rules
+`hk.pkl` gives every repo, knowledge and code, the same pre-commit hook. hk passes the
+staged files, and the hook's `stet` step runs `stet check --check-only --files <them>`. The tools and rules
 still read the whole repo; `--files` drops every finding outside the named files. Findings
 with no file (a tool that couldn't run) and `config-sync` always count. So another
 session's untracked note, or a broken file nobody is committing, never blocks a commit,
@@ -75,10 +75,32 @@ their unstaged edits off disk mid-check. The cost: a file with both staged and u
 edits is checked as it is on disk. A link to a file that isn't committed passes too. Both
 are rare, and the full `stet check` still catches them.
 
-`hk install --mise` turns the hook on per clone; it's git config, not a file in the repo.
-`stet doctor` reads each repo's `.git/config` and `~/.gitconfig` as text and fails a repo
-with no `hk-pre-commit` hook. `--no-verify` and `HK=0` skip it; that's for Gerry, and
-agents are kept from it outside stet.
+Everything above the marker line
+`// ---- Below this line: this repo's own steps. …` is stet's. Below it, a code repo sets
+`repo_steps` (rustfmt and clippy, SwiftFormat and SwiftLint, `mix format` and Credo);
+`hk check` and `hk fix` run them with the stet step. A Pkl `local` property can be
+declared after the `steps` block that spreads it, so the marker can sit at the end like
+`.mise.toml`'s.
+
+The hook itself is one global entry in `~/.gitconfig`, from
+`hk install --global --mise`: every clone and worktree runs it, and a repo without
+`hk.pkl` is a quiet no-op. It runs the hk the repo pins (`mise x hk --`), with `--staged`,
+so it never stashes. `stet doctor` reads each repo's `.git/config` and `~/.gitconfig` as
+text and fails a repo with no `hk-pre-commit` hook. `--no-verify` and `HK=0` skip it;
+that's for Gerry. Agents are kept from it by a PreToolUse hook in Gerry's dotfiles
+(`no-hook-skips`), for Claude Code and Codex.
+
+## Code repos
+
+`kind = "code"` in `.stet.toml` makes stet check a code repo's Markdown and spelling and
+own its hook, and nothing else. The repo keeps its `mise.toml` (stet writes no
+`.mise.toml`) and its CI (no workflow unless `ci = true`), and runs
+`stet check --check-only` in that CI itself. Because stet doesn't write its mise config,
+`stet check` reports a `config-sync` error when it doesn't pin `"github:gshaw/stet"` and
+hk at this stet's versions. cspell reads every file the repo doesn't ignore, code too,
+with the repo's `.cspell.yaml` imported; a cspell config under another name
+(`.cspell.yml`, `cspell.config.yaml`, …) is a `config-sync` error, because stet would
+skip its words.
 
 ## `stet inbox`
 
