@@ -1,7 +1,11 @@
 [tools]
 rust = { version = "1.98.1", components = "rustfmt,clippy" }
 hk = "2.12.0"
+"github:gshaw/stet" = "0.2.0"
 cargo-insta = "1.48.0"
+
+[settings]
+use_versions_host = false
 
 [tasks.build]
 description = "Build stet for release"
@@ -11,8 +15,12 @@ run = "cargo build --release"
 description = "Every test; none of them touches the real knowledge repos or gshaw.ca"
 run = "cargo test"
 
+[tasks.check]
+description = "Format and lint everything: stet, rustfmt, clippy. Run before committing"
+run = "hk fix --all"
+
 [tasks.lint]
-description = "rustfmt and clippy, as the pre-commit hook runs them"
+description = "Check everything, as the pre-commit hook does for staged files"
 run = "hk check --all"
 
 [tasks.fmt]

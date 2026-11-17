@@ -272,6 +272,7 @@ fn check_runs_the_tools_in_order_and_parses_them() {
     let home = Home::new();
     home.stet(&["sync"]);
     home.fake("prettier", "Notes/a.md\n", 0);
+    // cspell:ignore curently
     home.fake(
         "cspell",
         "Notes/a.md:7:4 - Unknown word (curently) fix: (currently)\n\

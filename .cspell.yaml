@@ -1,0 +1,35 @@
+# This repo's words. stet check and editors' spell checkers both read this file; stet's
+# own cspell settings come from .stet.toml. Add jargon under the comment headings, and fix
+# real typos in the content instead.
+
+words:
+  # Crates and Rust tooling
+  - clippy
+  - cmark # pulldown-cmark
+  - globset
+  - insta
+  - miette
+  - replacen # str::replacen
+  - serde
+  - strftime
+  - TASKLISTS # pulldown-cmark's Options::ENABLE_TASKLISTS
+  # Tools and services stet runs or compares
+  - codesign
+  - healthchecks
+  - Litestream
+  - rumdl
+  - otpauth # the 2FA seed URL scheme publish refuses
+  - iban
+  # Gerry's repos and accounts
+  - Arniston
+  - gshaw
+  - sarduty
+  - Goodreads
+  # Writing terms
+  - frontmatter
+  - llms # llms.txt
+  - redactions
+  - strikethrough
+  # Canadian spelling, as Gerry writes
+  - behaviour
+  - recognise

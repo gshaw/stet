@@ -97,8 +97,11 @@ prints the new file's path and never commits, pushes or deploys: Gerry reads it 
 
 ## Developing
 
-`mise run test`, `mise run lint`, `mise run fmt`, and `mise run snapshots` to review changed
-snapshots. hk runs rustfmt and clippy before every commit. To release, bump `version` in
+`mise run test`, `mise run check` (format and lint everything: stet, rustfmt, clippy),
+`mise run lint` (the same, check-only), and `mise run snapshots` to review changed
+snapshots. stet checks its own docs and spelling: the hook runs the released stet pinned in
+`mise.toml`, then rustfmt and clippy, on the staged files. CI runs those on the whole repo,
+plus the tests. To release, bump `version` in
 `Cargo.toml`, merge, and push a matching tag (`v0.2.0`): the release workflow builds the
 Mac and Linux binaries and attaches them to a GitHub release. Agents working on this repo start with
 [AGENTS.md](AGENTS.md).

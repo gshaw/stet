@@ -21,6 +21,7 @@ use crate::markdown::{self, Block, BlockKind, Lines, Patterns};
 
 /// A date as these repos write them: 2026-10-03, 2026-10, October 3rd, 2026, 3 Oct 2026,
 /// Aug 2026, or a bare year from 1990 on.
+// cspell:ignore uary ruary ober
 pub static DATE: LazyLock<Regex> = LazyLock::new(|| {
     let month = r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sept?(?:ember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)";
     Regex::new(&format!(
