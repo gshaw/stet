@@ -45,6 +45,8 @@ skips binary files (PDFs, images, office documents).
   right above it, is the repo's own vocabulary. Add words there.
 - `.mise.toml`: stet's down to the marker line
   `# ---- Below this line: this repo's own tasks. …`. Add the repo's own tasks below it.
+- `hk.pkl`: all stet's. The pre-commit hook: `stet check --check-only --files` on the
+  staged Markdown files. Turn it on once per clone with `hk install --mise`.
 - `.github/workflows/static-analysis.yml` when `ci` is true.
 
 After editing `.stet.toml`, run `stet sync`, then `mise run check`, and commit both.
