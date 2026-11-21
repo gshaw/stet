@@ -28,8 +28,8 @@ there, dated, newest first. The idea's history before the repo is in Workshop at
   each repo's pin, and each repo is committed.
 - **stet never uses git, never commits, never pushes.** `sync` and `init` write files;
   `publish` writes one file into the site repo. `check` changes files only through
-  Prettier, and not at all with `--check-only`. The pre-commit hook gets the staged files
-  from hk (`--files`); `doctor` reads git config as text to see the hook is on.
+  Prettier, and not at all with `--check-only`. A code repo's pre-commit hook gets the
+  staged files from hk (`--files`); a knowledge repo's checks the whole repo; `doctor` reads git config as text to see the hook is on.
 - **Never touch `Inbox/` or the verbatim paths** a repo's `.stet.toml` ignores. No tool
   and no rule reads them.
 - **Tests never touch the real repos or gshaw.ca.** They copy `tests/fixtures` into a

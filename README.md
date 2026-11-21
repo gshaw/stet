@@ -33,7 +33,7 @@ stet check                # the same: format, spell-check, lint, house rules
 stet check --check-only   # change nothing, as CI does
 stet check --warnings     # list the warnings too, not just the count
 stet check --all          # every repo in ~/.config/stet/config.toml
-stet check --check-only --files a.md b.md   # only findings in these, as the hook does
+stet check --check-only --files a.md b.md   # only findings in these, as a code repo's hook does
 stet sync                 # rewrite .mise.toml, hk.pkl and CI from .stet.toml
 stet doctor               # mise, Node and the tools run; every repo is in sync
 ```
@@ -46,9 +46,9 @@ in [Docs/design.md](Docs/design.md), and why in [Docs/decisions.md](Docs/decisio
 ## The pre-commit hook
 
 Every repo stet looks after, knowledge or code, has a generated `hk.pkl`: before each
-commit, [hk](https://hk.jdx.dev) runs `stet check --check-only --files` on the staged
-files, check-only and without a stash. Another session's untracked note can't block a
-commit; an unknown word in a staged file always does. A code repo adds its own steps
+commit, [hk](https://hk.jdx.dev) runs `stet check --check-only`, check-only and without a
+stash. A knowledge repo checks the whole repo, since the hook is its only check; a code
+repo checks only the staged files (`--files`) and leaves the rest to CI. A code repo adds its own steps
 (rustfmt, SwiftLint) below the marker line at the end. Turn hk on once per Mac:
 
 ```sh

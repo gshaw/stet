@@ -62,18 +62,22 @@ file system ignores case and GitHub doesn't.
 
 ## The pre-commit hook
 
-`hk.pkl` gives every repo, knowledge and code, the same pre-commit hook. hk passes the
-staged files, and the hook's `stet` step runs `stet check --check-only --files <them>`. The tools and rules
-still read the whole repo; `--files` drops every finding outside the named files. Findings
-with no file (a tool that couldn't run) and `config-sync` always count. So another
-session's untracked note, or a broken file nobody is committing, never blocks a commit,
-and a staged file with an unknown word always does. It takes about 3 seconds.
+`hk.pkl` gives every repo, knowledge and code, a pre-commit hook. In a knowledge repo its
+`stet` step runs `stet check --check-only` on the whole repo, because the hook is the only
+check there: a rename that breaks another note's link, or a word dropped from
+`.cspell.yaml`, fails the commit. Another session's unfinished note can fail it too; the
+fix is usually a word or a format, and whoever commits next makes it. It takes about
+3 seconds.
+
+In a code repo hk passes the staged files, and the step runs
+`stet check --check-only --files <them>`. The tools and rules still read the whole repo;
+`--files` drops every finding outside the named files. Findings with no file (a tool that
+couldn't run) and `config-sync` always count. CI checks the whole repo there.
 
 stet never runs git, so hk picks the files. The hook is check-only and sets
 `stash = "none"`: several agent sessions share one working tree, and stashing would move
 their unstaged edits off disk mid-check. The cost: a file with both staged and unstaged
-edits is checked as it is on disk. A link to a file that isn't committed passes too. Both
-are rare, and the full `stet check` still catches them.
+edits is checked as it is on disk, and a link to a file that isn't committed passes.
 
 Everything above the marker line
 `// ---- Below this line: this repo's own steps. …` is stet's. Below it, a code repo sets
