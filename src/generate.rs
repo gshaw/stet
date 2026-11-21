@@ -114,7 +114,7 @@ pub fn files(config: &RepoConfig, existing: impl Fn(&str) -> Option<String>) -> 
     }
     files.push(Generated {
         path: "hk.pkl",
-        text: hk(existing("hk.pkl").as_deref()),
+        text: hk(config.kind, existing("hk.pkl").as_deref()),
     });
     if config.ci() {
         files.push(Generated {
@@ -231,16 +231,23 @@ pub fn hk_tail(text: &str) -> Option<&str> {
     Some(rest.strip_prefix('\n').unwrap_or(rest))
 }
 
-/// Every repo's hooks, the same everywhere: one pre-commit hook, check-only and no stash,
-/// because sessions share working trees and a stash would move their edits off disk. The
-/// stet step gets every staged file and reports findings only in those. The repo's own
-/// steps (rustfmt, SwiftLint) go below the marker; `hk check` and `hk fix` run them all.
-fn hk(existing: Option<&str>) -> String {
+/// Every repo's hooks: one pre-commit hook, check-only and no stash, because sessions
+/// share working trees and a stash would move their edits off disk. In a knowledge repo
+/// the stet step checks the whole repo, so a rename that breaks another note's link, or a
+/// word dropped from `.cspell.yaml`, fails the commit; the hook is the only check there.
+/// In a code repo it reports findings only in the staged files, and CI checks the rest.
+/// The repo's own steps (rustfmt, SwiftLint) go below the marker; `hk check` and `hk fix`
+/// run them all.
+fn hk(kind: Kind, existing: Option<&str>) -> String {
     let header = HEADER.replacen('#', "//", 1);
     let tail = existing.and_then(hk_tail).unwrap_or(HK_EMPTY);
+    let (scope, files) = match kind {
+        Kind::Notes => ("the whole repo", ""),
+        Kind::Code => ("the staged files only", " --files {{files}}"),
+    };
     format!(
         r#"{header}
-// Every repo's pre-commit hook: check-only, no stash, the staged files only. hk's global
+// Every repo's pre-commit hook: check-only, no stash, {scope}. hk's global
 // hook in ~/.gitconfig runs it. `hk fix --all` fixes what it can. The repo's own steps go
 // below the marker line at the end, as `repo_steps`.
 amends "package://github.com/jdx/hk/releases/download/v{HK}/hk@{HK}#/Config.pkl"
@@ -255,8 +262,8 @@ hooks {{
 
 steps {{
   ["stet"] {{
-    check = "stet check --check-only --files {{{{files}}}}"
-    fix = "stet check --files {{{{files}}}}"
+    check = "stet check --check-only{files}"
+    fix = "stet check{files}"
   }}
   ...repo_steps
 }}
@@ -439,6 +446,16 @@ mod tests {
             parsed["settings"]["use_versions_host"].as_bool(),
             Some(false)
         );
+    }
+
+    #[test]
+    fn notes_hook_checks_the_whole_repo_and_code_hook_the_staged_files() {
+        let notes = hk(Kind::Notes, None);
+        assert!(notes.contains(r#"check = "stet check --check-only""#));
+        assert!(notes.contains(r#"fix = "stet check""#));
+        let code = hk(Kind::Code, None);
+        assert!(code.contains(r#"check = "stet check --check-only --files {{files}}""#));
+        assert!(code.contains(r#"fix = "stet check --files {{files}}""#));
     }
 
     #[test]

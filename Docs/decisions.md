@@ -5,6 +5,21 @@ decisions here. [design.md](design.md) describes how stet works now. The idea's 
 before the repo is the Workshop note
 [`Ideas/2026/stet.md`](https://github.com/gshaw/Workshop/blob/main/Ideas/2026/stet.md).
 
+## 2026-11-21 · A knowledge repo's hook checks the whole repo
+
+The hook in a knowledge repo runs `stet check --check-only` with no `--files`; code repos
+keep `--files`. Gerry ran out of GitHub Actions minutes, and the knowledge repos' CI
+repeated the hook, so it goes once the hook covers what CI did. Staged files alone don't:
+in a scratch clone of Workshop, renaming `Tooling/github-runner.md` committed cleanly
+while the full check found two broken links into it. A word dropped from `.cspell.yaml`
+or a stet upgrade slips through the same way.
+
+This reverses part of the 2026-11-17 entry below. Its worry, another session's
+unfinished note blocking a commit, was a prediction: the hook never ran on the whole repo.
+Gerry's call: a finding in a knowledge repo is almost always a word or a format, and
+whoever commits next fixes it. Agents can't skip the hook (`no-hook-skips`), so that's
+what they do.
+
 ## 2026-11-17 · markdownlint skips what Prettier and cspell skip
 
 The first code repos showed markdownlint reading what the other two tools skip: am's
